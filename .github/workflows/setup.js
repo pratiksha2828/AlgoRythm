@@ -1,81 +1,72 @@
 // setup.js
-import readline from 'readline';
-import fetch from 'node-fetch';
-import fs from 'fs';
-import path from 'path';
+
+const fs = require("fs");
+const path = require("path");
+const readline = require("readline");
+const { exec } = require("child_process");
+const inquirer = require("inquirer");
 
 const rl = readline.createInterface({
   input: process.stdin,
-  output: process.stdout
+  output: process.stdout,
 });
 
-const ask = (question) => new Promise(resolve => rl.question(question, resolve));
+const prompt = (question) =>
+  new Promise((resolve) => rl.question(question, resolve));
 
-(async () => {
-  console.log("🔐 GitHub Webhook Workflow Setup");
+async function main() {
+  console.log("\n🔧 GitHub Auto-Setup Starting...");
 
-  const token = await ask("Enter your GitHub Personal Access Token (with repo access): ");
+  const answers = await inquirer.prompt([
+    {
+      type: "input",
+      name: "repoUrl",
+      message: "Paste your GitHub repo URL (e.g., https://github.com/username/repo.git):",
+    },
+    {
+      type: "input",
+      name: "email",
+      message: "Enter your GitHub email:",
+    },
+    {
+      type: "input",
+      name: "username",
+      message: "Enter your GitHub username:",
+    },
+  ]);
 
-  const headers = {
-    'Authorization': `token ${token}`,
-    'Accept': 'application/vnd.github.v3+json'
-  };
+  console.log("\n🔐 Setting up Git config...");
+  exec(`git config user.email "${answers.email}"`);
+  exec(`git config user.name "${answers.username}"`);
 
-  const userRes = await fetch('https://api.github.com/user', { headers });
-  const userData = await userRes.json();
+  console.log("\n📁 Initializing Git repository if not already initialized...");
+  exec("git init");
 
-  if (!userData.login) {
-    console.error("❌ Invalid token. Aborting.");
-    process.exit(1);
-  }
+  console.log("\n🔗 Adding remote origin...");
+  exec(`git remote remove origin`, () => {
+    exec(`git remote add origin ${answers.repoUrl}`, () => {
+      console.log("✔️  Remote added.");
 
-  const username = userData.login;
-  console.log(`✅ Authenticated as ${username}`);
+      console.log("\n📦 Creating .github/workflows folder if not present...");
+      fs.mkdirSync(".github/workflows", { recursive: true });
 
-  const reposRes = await fetch(`https://api.github.com/user/repos?per_page=100`, { headers });
-  const repos = await reposRes.json();
+      const workflowContent = `name: Webhook Writer\n\n"on": [push]\n\njobs:\n  webhook:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v3\n      - name: Run webhook\n        run: echo 'Triggering webhook writer...'
+      `;
 
-  console.log("📦 Your Repositories:");
-  repos.forEach((repo, idx) => console.log(`${idx + 1}. ${repo.full_name}`));
+      fs.writeFileSync(
+        path.join(".github", "workflows", "webhook-writer.yml"),
+        workflowContent
+      );
 
-  const input = await ask("Enter the numbers of repos to add webhook workflow to (comma separated): ");
-  const selectedIndexes = input.split(',').map(i => parseInt(i.trim()) - 1);
-
-  const workflowContent = fs.readFileSync(path.join(__dirname, '.github/workflows/webhook-writer.yml'), 'utf8');
-
-  for (const index of selectedIndexes) {
-    const repo = repos[index];
-    console.log(`🚀 Adding workflow to ${repo.full_name}...`);
-
-    const branch = repo.default_branch;
-    const pathOnRepo = '.github/workflows/webhook-writer.yml';
-
-    // Get SHA of existing file if it exists
-    const existingRes = await fetch(`https://api.github.com/repos/${repo.full_name}/contents/${pathOnRepo}?ref=${branch}`, { headers });
-    let sha = null;
-    if (existingRes.status === 200) {
-      const existing = await existingRes.json();
-      sha = existing.sha;
-    }
-
-    const res = await fetch(`https://api.github.com/repos/${repo.full_name}/contents/${pathOnRepo}`, {
-      method: 'PUT',
-      headers,
-      body: JSON.stringify({
-        message: "🔁 Add GitHub Webhook Workflow",
-        content: Buffer.from(workflowContent).toString('base64'),
-        branch,
-        sha
-      })
+      console.log("\n✅ Workflow created.");
+      console.log("📤 Pushing to GitHub...");
+      exec("git add . && git commit -m \"Add GitHub Action\" && git push -u origin main", (err, stdout, stderr) => {
+        if (err) console.error("❌ Push failed:", stderr);
+        else console.log("🚀 Successfully pushed and set up.");
+        rl.close();
+      });
     });
+  });
+}
 
-    if (res.status === 201 || res.status === 200) {
-      console.log(`✅ Workflow added to ${repo.full_name}`);
-    } else {
-      const err = await res.json();
-      console.error(`❌ Failed for ${repo.full_name}: ${err.message}`);
-    }
-  }
-
-  rl.close();
-})();
+main();
