@@ -1,48 +1,48 @@
 {
-  "after": "1c1b75637fee8f3594dd637959eea8de8b0e2c37",
+  "after": "87c734c3cc9caec8544741a3f3b3fd1bd9677cf1",
   "base_ref": null,
-  "before": "82f3fa7d7bcb38c5764ea07d41b41ccb5c4f4273",
+  "before": "1c1b75637fee8f3594dd637959eea8de8b0e2c37",
   "commits": [
     {
       "author": {
-        "email": "125204081+pratiksha2828@users.noreply.github.com",
-        "name": "pratiksha2828",
-        "username": "pratiksha2828"
+        "email": "github-actions[bot]@users.noreply.github.com",
+        "name": "github-actions[bot]",
+        "username": "github-actions[bot]"
       },
       "committer": {
-        "email": "noreply@github.com",
-        "name": "GitHub",
-        "username": "web-flow"
+        "email": "github-actions[bot]@users.noreply.github.com",
+        "name": "github-actions[bot]",
+        "username": "github-actions[bot]"
       },
       "distinct": true,
-      "id": "1c1b75637fee8f3594dd637959eea8de8b0e2c37",
-      "message": "Update github.js",
-      "timestamp": "2025-05-11T01:01:48+05:30",
-      "tree_id": "0ee71c4c12e039f7b8427058d635583ef833383e",
-      "url": "https://github.com/pratiksha2828/AlgoRythm/commit/1c1b75637fee8f3594dd637959eea8de8b0e2c37"
+      "id": "87c734c3cc9caec8544741a3f3b3fd1bd9677cf1",
+      "message": "Update event payload",
+      "timestamp": "2025-05-10T19:31:55Z",
+      "tree_id": "73ed43b97e862d59a597084e166ab0a80088d833",
+      "url": "https://github.com/pratiksha2828/AlgoRythm/commit/87c734c3cc9caec8544741a3f3b3fd1bd9677cf1"
     }
   ],
-  "compare": "https://github.com/pratiksha2828/AlgoRythm/compare/82f3fa7d7bcb...1c1b75637fee",
+  "compare": "https://github.com/pratiksha2828/AlgoRythm/compare/1c1b75637fee...87c734c3cc9c",
   "created": false,
   "deleted": false,
   "forced": false,
   "head_commit": {
     "author": {
-      "email": "125204081+pratiksha2828@users.noreply.github.com",
-      "name": "pratiksha2828",
-      "username": "pratiksha2828"
+      "email": "github-actions[bot]@users.noreply.github.com",
+      "name": "github-actions[bot]",
+      "username": "github-actions[bot]"
     },
     "committer": {
-      "email": "noreply@github.com",
-      "name": "GitHub",
-      "username": "web-flow"
+      "email": "github-actions[bot]@users.noreply.github.com",
+      "name": "github-actions[bot]",
+      "username": "github-actions[bot]"
     },
     "distinct": true,
-    "id": "1c1b75637fee8f3594dd637959eea8de8b0e2c37",
-    "message": "Update github.js",
-    "timestamp": "2025-05-11T01:01:48+05:30",
-    "tree_id": "0ee71c4c12e039f7b8427058d635583ef833383e",
-    "url": "https://github.com/pratiksha2828/AlgoRythm/commit/1c1b75637fee8f3594dd637959eea8de8b0e2c37"
+    "id": "87c734c3cc9caec8544741a3f3b3fd1bd9677cf1",
+    "message": "Update event payload",
+    "timestamp": "2025-05-10T19:31:55Z",
+    "tree_id": "73ed43b97e862d59a597084e166ab0a80088d833",
+    "url": "https://github.com/pratiksha2828/AlgoRythm/commit/87c734c3cc9caec8544741a3f3b3fd1bd9677cf1"
   },
   "pusher": {
     "email": "125204081+pratiksha2828@users.noreply.github.com",
@@ -132,7 +132,7 @@
     },
     "private": false,
     "pulls_url": "https://api.github.com/repos/pratiksha2828/AlgoRythm/pulls{/number}",
-    "pushed_at": 1746905508,
+    "pushed_at": 1746905515,
     "releases_url": "https://api.github.com/repos/pratiksha2828/AlgoRythm/releases{/id}",
     "size": 98,
     "ssh_url": "git@github.com:pratiksha2828/AlgoRythm.git",
@@ -147,7 +147,7 @@
     "teams_url": "https://api.github.com/repos/pratiksha2828/AlgoRythm/teams",
     "topics": [],
     "trees_url": "https://api.github.com/repos/pratiksha2828/AlgoRythm/git/trees{/sha}",
-    "updated_at": "2025-05-10T19:31:46Z",
+    "updated_at": "2025-05-10T19:31:54Z",
     "url": "https://api.github.com/repos/pratiksha2828/AlgoRythm",
     "visibility": "public",
     "watchers": 0,
