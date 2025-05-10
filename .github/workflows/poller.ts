@@ -1,94 +1,160 @@
-// poller.ts
-import { Octokit } from '@octokit/rest';
-import { config } from 'dotenv';
-import fetch from 'node-fetch';
+import fs from 'fs';
 import path from 'path';
-import { execSync } from 'child_process';
+import * as dotenv from 'dotenv';
+import { Octokit } from "@octokit/rest";
+import OpenAI from "openai";
 
-config();
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const octokit = new Octokit({ auth: GITHUB_TOKEN });
+dotenv.config();
 
-const owner = 'pratiksha2828';
-const repo = 'AlgoRythm';
-const filePath = '.github/events/latest-event.json';
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+
+const owner = 'silentdrops';
+const repo = 'AutoRefactor';
+const POLL_INTERVAL = 10_000;
+
 let lastSha = '';
+const processedPRs = new Set<number>();
 
-async function testApiKey() {
-  const res = await fetch('https://api.openai.com/v1/models', {
-    headers: {
-      'Authorization': `Bearer ${OPENAI_API_KEY}`
-    }
-  });
-  if (res.ok) {
-    console.log("✅ API Key is valid and working.");
-  } else {
-    console.log("❌ API Key failed:", res.statusText);
+async function poll() {
+  const eventPath = path.join('.github', 'events', 'latest-event.json');
+
+  if (!fs.existsSync(eventPath)) {
+    console.log("⚠️ Event file not found:", eventPath);
+    return;
   }
-}
 
-async function refactorCodeWithOpenAI(code: string): Promise<string> {
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${OPENAI_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-4",
-      messages: [
-        {
-          role: "system",
-          content: "You are an expert programmer. Refactor the following code to improve readability, maintainability, and performance, without changing the logic. Return only the updated code."
-        },
-        {
-          role: "user",
-          content: code
-        }
-      ]
-    })
-  });
-
-  const data = await response.json();
-  return data.choices?.[0]?.message?.content || code;
-}
-
-async function createBranchAndCommit(fileName: string, content: string, baseSha: string, prNumber: number) {
-  const branchName = `refactor/pr-${prNumber}`;
-  const newFileName = `refactored-${path.basename(fileName)}`;
-
-  const { data: base } = await octokit.git.getRef({ owner, repo, ref: `heads/main` });
-  const baseCommitSha = base.object.sha;
-
+  const data = fs.readFileSync(eventPath, 'utf-8');
+  let event;
   try {
-    await octokit.git.createRef({
+    event = JSON.parse(data);
+  } catch (err) {
+    console.error("❌ Invalid JSON in event file.");
+    return;
+  }
+
+  console.log("📨 Raw event data:", JSON.stringify(event, null, 2));
+
+  const prNumber = event?.pull_request?.number;
+  const prSha = event?.pull_request?.head?.sha;
+
+  if (!prNumber || !prSha) {
+    console.log("ℹ️ Event does not contain valid pull_request data.");
+    return;
+  }
+
+  if (processedPRs.has(prNumber)) {
+    console.log(`🔁 Already processed PR #${prNumber}, skipping.`);
+    return;
+  }
+
+  if (prSha === lastSha) {
+    console.log("⏳ No new event.");
+    return;
+  }
+
+  lastSha = prSha;
+  processedPRs.add(prNumber);
+
+  console.log(`📦 Processing PR #${prNumber} with SHA ${prSha}`);
+
+  const filesRes = await octokit.rest.pulls.listFiles({ owner, repo, pull_number: prNumber });
+
+  const files = filesRes.data.filter(file =>
+    file.filename.endsWith('.ts') || file.filename.endsWith('.js')
+  );
+
+  if (files.length === 0) {
+    console.log("📁 No TypeScript or JavaScript files found.");
+    return;
+  }
+
+  for (const file of files) {
+    const contentRes = await octokit.rest.repos.getContent({
       owner,
       repo,
-      ref: `refs/heads/${branchName}`,
-      sha: baseCommitSha,
+      path: file.filename,
+      ref: prSha,
     });
-  } catch (err: any) {
-    if (err.status === 422) {
-      console.log(`⚠️ Branch ${branchName} already exists. Proceeding...`);
-    } else throw err;
-  }
 
-  const blob = await octokit.git.createBlob({
+    const fileData = contentRes.data as any;
+    const content = Buffer.from(fileData.content, 'base64').toString('utf-8');
+
+    const refactored = await refactorCode(content);
+
+    if (!refactored) {
+      console.warn("⚠️ Refactored content is empty or invalid.");
+      continue;
+    }
+
+    await createBranchAndCommit(file.filename, refactored, prNumber);
+  }
+}
+
+async function refactorCode(code: string): Promise<string | null> {
+  try {
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an expert programmer. Refactor the given code to improve readability and performance. Return only the full refactored code.',
+        },
+        {
+          role: 'user',
+          content: code,
+        },
+      ],
+      temperature: 0.3,
+    });
+
+    return response.choices[0]?.message?.content ?? null;
+  } catch (error) {
+    console.error("❌ Error during refactoring:", error);
+    return null;
+  }
+}
+
+async function createBranchAndCommit(fileName: string, content: string, prNumber: number) {
+  const branchName = `refactor-pr-${prNumber}-${Date.now()}`;
+  const baseBranch = 'main';
+
+  const { data: refData } = await octokit.rest.git.getRef({
+    owner,
+    repo,
+    ref: `heads/${baseBranch}`,
+  });
+
+  const baseSha = refData.object.sha;
+
+  await octokit.rest.git.createRef({
+    owner,
+    repo,
+    ref: `refs/heads/${branchName}`,
+    sha: baseSha,
+  });
+
+  const blob = await octokit.rest.git.createBlob({
     owner,
     repo,
     content,
     encoding: 'utf-8',
   });
 
-  const tree = await octokit.git.createTree({
+  const { data: baseCommit } = await octokit.rest.git.getCommit({
     owner,
     repo,
-    base_tree: baseCommitSha,
+    commit_sha: baseSha,
+  });
+
+  const tree = await octokit.rest.git.createTree({
+    owner,
+    repo,
+    base_tree: baseCommit.tree.sha,
     tree: [
       {
-        path: newFileName,
+        path: fileName,
         mode: '100644',
         type: 'blob',
         sha: blob.data.sha,
@@ -96,83 +162,31 @@ async function createBranchAndCommit(fileName: string, content: string, baseSha:
     ],
   });
 
-  const commit = await octokit.git.createCommit({
+  const commit = await octokit.rest.git.createCommit({
     owner,
     repo,
-    message: `refactor: add ${newFileName}`,
+    message: `Refactor file: ${fileName}`,
     tree: tree.data.sha,
-    parents: [baseCommitSha],
+    parents: [baseSha],
   });
 
-  await octokit.git.updateRef({
+  await octokit.rest.git.updateRef({
     owner,
     repo,
     ref: `heads/${branchName}`,
     sha: commit.data.sha,
-    force: true,
   });
 
-  console.log(`✅ Committed ${newFileName} to branch ${branchName}`);
+  await octokit.rest.pulls.create({
+    owner,
+    repo,
+    head: branchName,
+    base: baseBranch,
+    title: `Refactored ${fileName}`,
+    body: `This PR includes automatic refactoring of ${fileName}.`,
+  });
 
-  try {
-    await octokit.pulls.create({
-      owner,
-      repo,
-      title: `Refactor: Add ${newFileName}`,
-      head: branchName,
-      base: 'main',
-      body: `This PR adds the refactored version of ${fileName}.`,
-    });
-    console.log(`🔀 Pull request created for ${newFileName}`);
-  } catch (err: any) {
-    if (err.status === 422) {
-      console.log(`⚠️ Pull request already exists for ${branchName}`);
-    } else {
-      throw err;
-    }
-  }
+  console.log(`✅ Refactor PR created for ${fileName}`);
 }
 
-async function poll() {
-  try {
-    const res = await octokit.repos.getContent({ owner, repo, path: filePath });
-    const content = res.data as any;
-    const sha = content.sha;
-
-    if (sha !== lastSha) {
-      lastSha = sha;
-      const decoded = Buffer.from(content.content, 'base64').toString('utf-8');
-      const event = JSON.parse(decoded);
-
-      console.log("🔔 New event received:");
-      console.log(JSON.stringify(event, null, 2));
-
-      if (event.action === 'opened' && event.pull_request) {
-        const prNumber = event.pull_request.number;
-        const filesRes = await octokit.pulls.listFiles({ owner, repo, pull_number: prNumber });
-
-        for (const file of filesRes.data) {
-          if (file.filename.endsWith('.ts') || file.filename.endsWith('.js')) {
-            const fileContentRes = await fetch(file.raw_url);
-            const originalCode = await fileContentRes.text();
-
-            console.log(`📄 Refactoring ${file.filename}...`);
-            const refactored = await refactorCodeWithOpenAI(originalCode);
-            await createBranchAndCommit(file.filename, refactored, sha, prNumber);
-          }
-        }
-      }
-    } else {
-      console.log("No new event.");
-    }
-  } catch (err) {
-    if (err instanceof Error) {
-      console.error("Polling error:", err.message);
-    } else {
-      console.error("Polling error:", err);
-    }
-  }
-}
-
-testApiKey();
-setInterval(poll, 10000);
+setInterval(poll, POLL_INTERVAL);
