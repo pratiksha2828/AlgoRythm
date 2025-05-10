@@ -1,48 +1,48 @@
 {
-  "after": "c1f4a25b38323c79458fe5a6ed7a378c4828091d",
+  "after": "3276ef4cf37ea49b09ac6aff3e3b052ee5dc71e1",
   "base_ref": null,
-  "before": "e5786f26fb9db12e7c352015d313f95ff38131e2",
+  "before": "c1f4a25b38323c79458fe5a6ed7a378c4828091d",
   "commits": [
     {
       "author": {
-        "email": "125204081+pratiksha2828@users.noreply.github.com",
-        "name": "pratiksha2828",
-        "username": "pratiksha2828"
+        "email": "github-actions[bot]@users.noreply.github.com",
+        "name": "github-actions[bot]",
+        "username": "github-actions[bot]"
       },
       "committer": {
-        "email": "noreply@github.com",
-        "name": "GitHub",
-        "username": "web-flow"
+        "email": "github-actions[bot]@users.noreply.github.com",
+        "name": "github-actions[bot]",
+        "username": "github-actions[bot]"
       },
       "distinct": true,
-      "id": "c1f4a25b38323c79458fe5a6ed7a378c4828091d",
-      "message": "Update passportSetup.js",
-      "timestamp": "2025-05-11T01:02:35+05:30",
-      "tree_id": "4d54548c89c1b5236217e2fc59ba568cdf892851",
-      "url": "https://github.com/pratiksha2828/AlgoRythm/commit/c1f4a25b38323c79458fe5a6ed7a378c4828091d"
+      "id": "3276ef4cf37ea49b09ac6aff3e3b052ee5dc71e1",
+      "message": "Update event payload",
+      "timestamp": "2025-05-10T19:32:43Z",
+      "tree_id": "39a4ea7bfd1cc550f99c1dda6a5f2a6809f104da",
+      "url": "https://github.com/pratiksha2828/AlgoRythm/commit/3276ef4cf37ea49b09ac6aff3e3b052ee5dc71e1"
     }
   ],
-  "compare": "https://github.com/pratiksha2828/AlgoRythm/compare/e5786f26fb9d...c1f4a25b3832",
+  "compare": "https://github.com/pratiksha2828/AlgoRythm/compare/c1f4a25b3832...3276ef4cf37e",
   "created": false,
   "deleted": false,
   "forced": false,
   "head_commit": {
     "author": {
-      "email": "125204081+pratiksha2828@users.noreply.github.com",
-      "name": "pratiksha2828",
-      "username": "pratiksha2828"
+      "email": "github-actions[bot]@users.noreply.github.com",
+      "name": "github-actions[bot]",
+      "username": "github-actions[bot]"
     },
     "committer": {
-      "email": "noreply@github.com",
-      "name": "GitHub",
-      "username": "web-flow"
+      "email": "github-actions[bot]@users.noreply.github.com",
+      "name": "github-actions[bot]",
+      "username": "github-actions[bot]"
     },
     "distinct": true,
-    "id": "c1f4a25b38323c79458fe5a6ed7a378c4828091d",
-    "message": "Update passportSetup.js",
-    "timestamp": "2025-05-11T01:02:35+05:30",
-    "tree_id": "4d54548c89c1b5236217e2fc59ba568cdf892851",
-    "url": "https://github.com/pratiksha2828/AlgoRythm/commit/c1f4a25b38323c79458fe5a6ed7a378c4828091d"
+    "id": "3276ef4cf37ea49b09ac6aff3e3b052ee5dc71e1",
+    "message": "Update event payload",
+    "timestamp": "2025-05-10T19:32:43Z",
+    "tree_id": "39a4ea7bfd1cc550f99c1dda6a5f2a6809f104da",
+    "url": "https://github.com/pratiksha2828/AlgoRythm/commit/3276ef4cf37ea49b09ac6aff3e3b052ee5dc71e1"
   },
   "pusher": {
     "email": "125204081+pratiksha2828@users.noreply.github.com",
@@ -132,7 +132,7 @@
     },
     "private": false,
     "pulls_url": "https://api.github.com/repos/pratiksha2828/AlgoRythm/pulls{/number}",
-    "pushed_at": 1746905556,
+    "pushed_at": 1746905564,
     "releases_url": "https://api.github.com/repos/pratiksha2828/AlgoRythm/releases{/id}",
     "size": 98,
     "ssh_url": "git@github.com:pratiksha2828/AlgoRythm.git",
@@ -147,7 +147,7 @@
     "teams_url": "https://api.github.com/repos/pratiksha2828/AlgoRythm/teams",
     "topics": [],
     "trees_url": "https://api.github.com/repos/pratiksha2828/AlgoRythm/git/trees{/sha}",
-    "updated_at": "2025-05-10T19:32:34Z",
+    "updated_at": "2025-05-10T19:32:41Z",
     "url": "https://api.github.com/repos/pratiksha2828/AlgoRythm",
     "visibility": "public",
     "watchers": 0,
