@@ -1,10 +1,29 @@
 {
-  "after": "55cdeb54142b7157162fba7dee01068d28c40a5a",
-  "base_ref": "refs/heads/main",
-  "before": "0000000000000000000000000000000000000000",
-  "commits": [],
-  "compare": "https://github.com/pratiksha2828/AlgoRythm/compare/test1",
-  "created": true,
+  "after": "2798bcdc87a37ef3493f88f4267d0fe0e42bacb4",
+  "base_ref": null,
+  "before": "55cdeb54142b7157162fba7dee01068d28c40a5a",
+  "commits": [
+    {
+      "author": {
+        "email": "github-actions[bot]@users.noreply.github.com",
+        "name": "github-actions[bot]",
+        "username": "github-actions[bot]"
+      },
+      "committer": {
+        "email": "github-actions[bot]@users.noreply.github.com",
+        "name": "github-actions[bot]",
+        "username": "github-actions[bot]"
+      },
+      "distinct": true,
+      "id": "2798bcdc87a37ef3493f88f4267d0fe0e42bacb4",
+      "message": "Update event payload",
+      "timestamp": "2025-05-10T19:31:23Z",
+      "tree_id": "8bbcd190a8b04b7c6e827b1b5845217a19547efd",
+      "url": "https://github.com/pratiksha2828/AlgoRythm/commit/2798bcdc87a37ef3493f88f4267d0fe0e42bacb4"
+    }
+  ],
+  "compare": "https://github.com/pratiksha2828/AlgoRythm/compare/55cdeb54142b...2798bcdc87a3",
+  "created": false,
   "deleted": false,
   "forced": false,
   "head_commit": {
@@ -19,11 +38,11 @@
       "username": "github-actions[bot]"
     },
     "distinct": true,
-    "id": "55cdeb54142b7157162fba7dee01068d28c40a5a",
+    "id": "2798bcdc87a37ef3493f88f4267d0fe0e42bacb4",
     "message": "Update event payload",
-    "timestamp": "2025-05-10T19:31:13Z",
-    "tree_id": "de896dbe512a51b2f3460a8267e7a8fc2c1da98c",
-    "url": "https://github.com/pratiksha2828/AlgoRythm/commit/55cdeb54142b7157162fba7dee01068d28c40a5a"
+    "timestamp": "2025-05-10T19:31:23Z",
+    "tree_id": "8bbcd190a8b04b7c6e827b1b5845217a19547efd",
+    "url": "https://github.com/pratiksha2828/AlgoRythm/commit/2798bcdc87a37ef3493f88f4267d0fe0e42bacb4"
   },
   "pusher": {
     "email": "125204081+pratiksha2828@users.noreply.github.com",
@@ -113,7 +132,7 @@
     },
     "private": false,
     "pulls_url": "https://api.github.com/repos/pratiksha2828/AlgoRythm/pulls{/number}",
-    "pushed_at": 1746905476,
+    "pushed_at": 1746905483,
     "releases_url": "https://api.github.com/repos/pratiksha2828/AlgoRythm/releases{/id}",
     "size": 98,
     "ssh_url": "git@github.com:pratiksha2828/AlgoRythm.git",
@@ -128,7 +147,7 @@
     "teams_url": "https://api.github.com/repos/pratiksha2828/AlgoRythm/teams",
     "topics": [],
     "trees_url": "https://api.github.com/repos/pratiksha2828/AlgoRythm/git/trees{/sha}",
-    "updated_at": "2025-05-10T19:31:08Z",
+    "updated_at": "2025-05-10T19:31:17Z",
     "url": "https://api.github.com/repos/pratiksha2828/AlgoRythm",
     "visibility": "public",
     "watchers": 0,
