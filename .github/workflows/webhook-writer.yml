@@ -2,7 +2,7 @@
 
 on:
   push:
-  pull_request:jgv
+  pull_request:
 
 permissions:
   contents: write  # Needed to push changes
