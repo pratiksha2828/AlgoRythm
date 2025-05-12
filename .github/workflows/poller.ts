@@ -10,8 +10,8 @@ dotenv.config();
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
-const owner = 'silentdrops';
-const repo = 'AutoRefactor';
+const owner = 'pratiksha2828';
+const repo = 'AlgoRythm';
 const POLL_INTERVAL = 10_000;
 
 let lastSha = '';
