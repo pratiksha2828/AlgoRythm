@@ -1,63 +1,76 @@
-const express = require("express");
-const axios = require("axios");
+import express from 'express';
+import simpleGit from 'simple-git';
+import { exec } from 'child_process';
+import { generateCommitMessage } from './ai.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+
+dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const router = express.Router();
-require("dotenv").config();
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-
-router.post("/", async (req, res) => {
+router.post('/webhook', async (req, res) => {
   const event = req.body;
+
   console.log("📩 Raw GitHub Event:", JSON.stringify(event, null, 2));
 
-  let messageToAI = "";
+  const repoName = event.repository?.name;
+  const owner = event.repository?.owner?.login;
+  const cloneUrl = event.repository?.clone_url;
+  const commitId = event.head_commit?.id;
 
-  if (event.pull_request) {
-    const pr = event.pull_request;
-    messageToAI = `A pull request was ${event.action}.\nTitle: ${pr.title}\nAuthor: ${pr.user.login}\nDescription: ${pr.body || "No description provided."}`;
-  } else if (event.commits) {
-    const commits = event.commits.map(c => `- ${c.message} by ${c.author.name}`).join("\n");
-    messageToAI = `A push event occurred with ${event.commits.length} commit(s):\n${commits}`;
-  } else {
-    messageToAI = "Received an event, but it wasn't a pull request or push.";
+  if (!repoName || !owner || !cloneUrl || !commitId) {
+    return res.status(400).send('Missing required data in webhook payload.');
   }
 
+  const repoDir = path.join(__dirname, 'repos', `${owner}_${repoName}`);
+  const repoGit = simpleGit(repoDir);
+  let messageToAI = `GitHub Repository: ${owner}/${repoName}`;
+
   try {
-    // Try Ollama first
-    const ollamaResponse = await axios.post("http://localhost:11434/api/generate", {
-      model: "llama3",
-      prompt: messageToAI,
-      stream: false
-    });
-
-    const reply = ollamaResponse.data.response;
-    console.log("🦙 Ollama Response:", reply);
-    return res.json({ response: reply });
-  } catch (ollamaError) {
-    console.warn("⚠️ Ollama failed, trying OpenAI...", ollamaError.message);
-
-    try {
-      const openaiResponse = await axios.post(
-        "https://api.openai.com/v1/chat/completions",
-        {
-          model: "gpt-3.5-turbo",
-          messages: [{ role: "user", content: messageToAI }],
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${OPENAI_API_KEY}`,
-          },
-        }
-      );
-
-      const reply = openaiResponse.data.choices[0].message.content;
-      console.log("🤖 OpenAI Response:", reply);
-      res.json({ response: reply });
-    } catch (openaiError) {
-      console.error("❌ Both AI services failed:", openaiError.message);
-      res.status(500).send("Both AI services failed.");
+    if (fs.existsSync(repoDir)) {
+      console.log("📁 Repo already exists. Pulling latest changes...");
+      await repoGit.pull('origin', 'main');
+    } else {
+      console.log("📦 Cloning repo...");
+      await simpleGit().clone(cloneUrl, repoDir);
     }
+
+    if (commitId && /^[a-f0-9]{7,40}$/i.test(commitId)) {
+      try {
+        // Check if commit actually exists in the local repo
+        const revList = await repoGit.raw(['rev-list', '--all']);
+        const knownCommits = revList.split("\n").filter(Boolean);
+        const isValidCommit = knownCommits.includes(commitId);
+
+        if (isValidCommit) {
+          const diff = await repoGit.diff(['--name-only', `${commitId}~1`, commitId]);
+          console.log("🔍 Changed files:\n" + diff);
+          messageToAI += `\n\nModified files:\n${diff}`;
+        } else {
+          console.warn("⚠️ Commit ID not found in repo. Skipping diff.");
+        }
+      } catch (err) {
+        console.warn("⚠️ Git diff failed:", err.message);
+      }
+    } else {
+      console.warn("⚠️ Invalid or missing commit ID. Skipping Git diff.");
+    }
+
+    // ✅ Send to AI for processing (e.g., refactor or suggest changes)
+    const aiMessage = await generateCommitMessage(messageToAI);
+
+    console.log("🤖 AI Response:\n", aiMessage);
+
+    res.status(200).send('Webhook processed successfully!');
+  } catch (error) {
+    console.error("❌ Error in webhook processing:", error);
+    res.status(500).send('Error processing webhook.');
   }
 });
 
-module.exports = router;
+export default router;

@@ -17,6 +17,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+
 app.use(bodyParser.json());
 
 app.post("/webhook", async (req, res) => {
@@ -27,19 +28,35 @@ app.post("/webhook", async (req, res) => {
   const commit = payload.head_commit;
   const cloneUrl = payload.repository.clone_url.replace("https://", `https://${process.env.GITHUB_TOKEN}@`);
 
-  console.log("🚀 Server running on http://localhost:" + PORT);
   console.log("📩 Raw GitHub Event:", JSON.stringify(payload, null, 2));
 
-  const repoPath = path.join(__dirname, repoName);
+  const repoPath = path.join(__dirname, "repos", repoName);
   const git = simpleGit();
 
   try {
-    await git.clone(cloneUrl);
+    // Clean up old repo if exists
+    if (fs.existsSync(repoPath)) {
+      fs.rmSync(repoPath, { recursive: true, force: true });
+    }
+
+    // Clone repo fresh
+    await git.clone(cloneUrl, repoPath);
     await git.cwd(repoPath);
     await git.checkout(branch);
 
     const commitHash = commit.id;
-    const changedFiles = (await git.diff(["--name-only", `${commitHash}~1`, commitHash])).split("\n").filter(Boolean);
+    let changedFiles = [];
+
+    try {
+      // Safely try to get diff
+      changedFiles = (await git.diff(["--name-only", `${commitHash}~1`, commitHash]))
+        .split("\n")
+        .filter(Boolean);
+    } catch (diffError) {
+      console.warn("⚠️ Diff failed, possibly first commit or missing parent commit.");
+      // Optionally: fallback to all tracked files
+      changedFiles = (await git.lsFiles()).split("\n").filter(Boolean);
+    }
 
     let refactorNeeded = false;
     const refactoredFiles = [];
@@ -72,7 +89,7 @@ app.post("/webhook", async (req, res) => {
         title: "🔁 Automated Code Refactor",
         head: refactorBranch,
         base: branch,
-        body: `This pull request contains automated refactoring of committed code triggered by commit ${commitHash}. Please review.`
+        body: `This pull request contains automated refactoring triggered by commit ${commitHash}. Please review.`,
       });
     }
 
@@ -81,7 +98,10 @@ app.post("/webhook", async (req, res) => {
     console.error("❌ Error in webhook processing:", err);
     res.sendStatus(500);
   } finally {
-    fs.rmSync(repoPath, { recursive: true, force: true });
+    // Clean up cloned repo
+    if (fs.existsSync(repoPath)) {
+      fs.rmSync(repoPath, { recursive: true, force: true });
+    }
   }
 });
 
@@ -92,4 +112,3 @@ app.get("/", (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
-
