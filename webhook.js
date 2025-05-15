@@ -1,76 +1,95 @@
-import express from 'express';
-import simpleGit from 'simple-git';
-import { exec } from 'child_process';
-import { generateCommitMessage } from './ai.js';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import dotenv from 'dotenv';
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+import simpleGit from "simple-git";
+import { generateRefactor } from "./ollama.js";
+import { Octokit } from "@octokit/rest";
 
-dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = dirname(__filename);
+const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
-const router = express.Router();
+export async function handleWebhook(payload) {
+  console.log("📩 Raw GitHub Event:", JSON.stringify(payload, null, 2));
 
-router.post('/webhook', async (req, res) => {
-  const event = req.body;
-
-  console.log("📩 Raw GitHub Event:", JSON.stringify(event, null, 2));
-
-  const repoName = event.repository?.name;
-  const owner = event.repository?.owner?.login;
-  const cloneUrl = event.repository?.clone_url;
-  const commitId = event.head_commit?.id;
-
-  if (!repoName || !owner || !cloneUrl || !commitId) {
-    return res.status(400).send('Missing required data in webhook payload.');
-  }
-
-  const repoDir = path.join(__dirname, 'repos', `${owner}_${repoName}`);
-  const repoGit = simpleGit(repoDir);
-  let messageToAI = `GitHub Repository: ${owner}/${repoName}`;
+  const repoName = payload.repository.name;
+  const owner = payload.repository.owner.name || payload.repository.owner.login;
+  const branch = payload.ref.split("/").pop();
+  const commit = payload.head_commit;
+  const commitHash = commit.id;
+  const cloneUrl = payload.repository.clone_url.replace("https://", `https://${process.env.GITHUB_TOKEN}@`);
+  const repoPath = path.join(__dirname, repoName);
+  const git = simpleGit();
 
   try {
-    if (fs.existsSync(repoDir)) {
-      console.log("📁 Repo already exists. Pulling latest changes...");
-      await repoGit.pull('origin', 'main');
-    } else {
-      console.log("📦 Cloning repo...");
-      await simpleGit().clone(cloneUrl, repoDir);
-    }
+    await git.clone(cloneUrl);
+    await git.cwd(repoPath);
+    await git.checkout(branch);
 
-    if (commitId && /^[a-f0-9]{7,40}$/i.test(commitId)) {
-      try {
-        // Check if commit actually exists in the local repo
-        const revList = await repoGit.raw(['rev-list', '--all']);
-        const knownCommits = revList.split("\n").filter(Boolean);
-        const isValidCommit = knownCommits.includes(commitId);
+    let changedFiles = [];
 
-        if (isValidCommit) {
-          const diff = await repoGit.diff(['--name-only', `${commitId}~1`, commitId]);
-          console.log("🔍 Changed files:\n" + diff);
-          messageToAI += `\n\nModified files:\n${diff}`;
-        } else {
-          console.warn("⚠️ Commit ID not found in repo. Skipping diff.");
+    try {
+      const diffOutput = await git.diff(["--name-only", `${commitHash}~1`, commitHash]);
+      changedFiles = diffOutput.split("\n").filter(Boolean);
+    } catch (err) {
+      console.warn("⚠️ Diff failed, possibly first commit or missing parent commit. Scanning all files instead.");
+      const walkFiles = (dir) => {
+        let results = [];
+        const list = fs.readdirSync(dir, { withFileTypes: true });
+        for (const file of list) {
+          const filePath = path.join(dir, file.name);
+          if (file.isDirectory() && ![".git", "node_modules"].includes(file.name)) {
+            results = results.concat(walkFiles(filePath));
+          } else if (file.isFile()) {
+            results.push(filePath);
+          }
         }
-      } catch (err) {
-        console.warn("⚠️ Git diff failed:", err.message);
-      }
-    } else {
-      console.warn("⚠️ Invalid or missing commit ID. Skipping Git diff.");
+        return results;
+      };
+      changedFiles = walkFiles(repoPath).map(filePath => path.relative(repoPath, filePath));
     }
 
-    // ✅ Send to AI for processing (e.g., refactor or suggest changes)
-    const aiMessage = await generateCommitMessage(messageToAI);
+    let refactorNeeded = false;
+    const refactoredFiles = [];
 
-    console.log("🤖 AI Response:\n", aiMessage);
+    for (const file of changedFiles) {
+      const ext = path.extname(file);
+      if ([".js", ".ts", ".py", ".java", ".json", ".jsx", ".tsx"].includes(ext)) {
+        const filePath = path.join(repoPath, file);
+        if (!fs.existsSync(filePath)) continue;
 
-    res.status(200).send('Webhook processed successfully!');
-  } catch (error) {
-    console.error("❌ Error in webhook processing:", error);
-    res.status(500).send('Error processing webhook.');
+        const code = fs.readFileSync(filePath, "utf-8");
+        const result = await generateRefactor(code);
+
+        if (!result.toLowerCase().includes("code is optimal")) {
+          fs.writeFileSync(filePath, result);
+          refactorNeeded = true;
+          refactoredFiles.push(file);
+        }
+      }
+    }
+
+    if (refactorNeeded) {
+      const refactorBranch = `refactor/auto-${commitHash.slice(0, 7)}`;
+      await git.checkoutLocalBranch(refactorBranch);
+      await git.add(refactoredFiles);
+      await git.commit("chore: automated code refactor via Ollama");
+      await git.push("origin", refactorBranch);
+
+      await octokit.pulls.create({
+        owner,
+        repo: repoName,
+        title: "🔁 Automated Code Refactor",
+        head: refactorBranch,
+        base: branch,
+        body: `This pull request contains automated refactoring of committed code triggered by commit ${commitHash}. Please review.`,
+      });
+    }
+
+  } finally {
+    if (fs.existsSync(repoPath)) {
+      fs.rmSync(repoPath, { recursive: true, force: true });
+    }
   }
-});
-
-export default router;
+}
