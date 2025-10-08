@@ -1,9 +1,0 @@
-tunnels:
-  - name: mytunnel
-    destination: http://localhost:3000 # Your local server
-    protocol: http
-    auto_start: true
-
-credentials:
-  key: YOUR_ACCESS_KEY
-  secret: YOUR_ACCESS_SECRET
