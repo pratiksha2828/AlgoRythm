@@ -1,0 +1,442 @@
+:root {
+  --bg: #0f1220;
+  --card: #171a2b;
+  --ink: #eaf0ff;
+  --muted: #9aa3b2;
+  --brand: #6c8cff;
+  --brand-ink: #0b1024;
+  --ok: #15d19a;
+  --warn: #ffbd4a;
+  --danger: #ff6b6b;
+}
+
+* { 
+  box-sizing: border-box; 
+}
+
+body, #root { 
+  min-height: 100vh; 
+  background: var(--bg); 
+  color: var(--ink); 
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; 
+  margin: 0;
+}
+
+.wrap { 
+  max-width: 960px; 
+  margin: 0 auto; 
+  padding: 0 18px 60px; 
+}
+
+/* ================= ENHANCED HEADER ================= */
+.header {
+  background: var(--card);
+  border-bottom: 1px solid #22263b;
+  padding: 16px 0;
+  margin-bottom: 30px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 18px;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--brand);
+  text-decoration: none;
+}
+
+.nav {
+  display: flex;
+  gap: 24px;
+}
+
+.nav-link {
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.nav-link:hover {
+  color: var(--brand);
+}
+
+/* ================= ENHANCED HERO ================= */
+.hero { 
+  text-align: center; 
+  margin: 40px 0 60px; 
+}
+
+.hero h1 { 
+  font-size: 2.8rem; 
+  margin: 0 0 12px; 
+  background: linear-gradient(135deg, var(--brand) 0%, #849dff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero p { 
+  color: var(--muted);
+  font-size: 1.1rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* ================= ENHANCED CARDS GRID ================= */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin: 50px 0;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid #22263b;
+  border-radius: 20px;
+  padding: 28px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--brand), var(--ok));
+  opacity: 0.8;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  border-color: var(--brand);
+}
+
+.card h3 {
+  font-size: 1.4rem;
+  margin: 0 0 12px 0;
+  color: var(--ink);
+}
+
+.card p {
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0 0 20px 0;
+}
+
+
+
+/* ================= CARD ICONS ================= */
+.card-icon {
+  text-align: center;
+  margin: -28px -28px 20px -28px;
+  background: linear-gradient(135deg, var(--brand) 0%, var(--ok) 100%);
+  padding: 25px 20px;
+  border-radius: 20px 20px 0 0;
+}
+
+.icon-emoji {
+  font-size: 3.5rem;
+  display: block;
+  text-align: center;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+/* Adjust card content spacing for the icon */
+.card {
+  display: flex;
+  flex-direction: column;
+}
+
+.card h3 {
+  margin: 0 0 12px 0;
+}
+
+.card p {
+  flex-grow: 1;
+  margin: 0 0 20px 0;
+}
+
+
+
+
+/* ================= ENHANCED BUTTONS ================= */
+.btn { 
+  background: #232742; 
+  color: var(--ink); 
+  border: 1px solid #2c3150; 
+  padding: 12px 20px; 
+  border-radius: 10px; 
+  cursor: pointer; 
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.btn:hover { 
+  filter: brightness(1.1); 
+  transform: translateY(-1px);
+}
+
+.btn.primary { 
+  background: var(--brand); 
+  color: var(--brand-ink); 
+  border: none; 
+  font-weight: 600; 
+}
+
+.btn.card-btn {
+  width: 100%;
+  justify-content: center;
+  font-weight: 600;
+  margin-top: auto;
+}
+
+.btn.ghost { 
+  background: transparent; 
+  border: 1px dashed #3a4066; 
+  color: var(--muted); 
+}
+
+/* ================= ENHANCED FOOTER ================= */
+.footer {
+  background: var(--card);
+  border-top: 1px solid #22263b;
+  padding: 40px 0 20px;
+  margin-top: 80px;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 40px;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 18px;
+}
+
+.footer-section h4 {
+  color: var(--ink);
+  margin: 0 0 16px 0;
+  font-size: 1.1rem;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links li {
+  margin: 0 0 10px 0;
+}
+
+.footer-links a {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+  color: var(--brand);
+}
+
+.footer-bottom {
+  text-align: center;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid #22263b;
+  color: var(--muted);
+}
+
+/* ================= RESPONSIVE DESIGN ================= */
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .nav {
+    gap: 15px;
+  }
+  
+  .hero h1 {
+    font-size: 2.2rem;
+  }
+  
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero h1 {
+    font-size: 1.8rem;
+  }
+  
+  .nav {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .card {
+    padding: 20px;
+  }
+}
+
+/* ================= ORIGINAL STYLES (KEPT FOR REFERENCE) ================= */
+.panel { 
+  background: var(--card); 
+  border: 1px solid #22263b; 
+  border-radius: 16px; 
+  padding: 22px; 
+  margin: 22px 0; 
+}
+
+.actions { 
+  display: flex; 
+  gap: 12px; 
+  flex-wrap: wrap; 
+  margin-top: 14px; 
+}
+
+.why h3 { 
+  margin: 14px 0 8px; 
+}
+
+.why ul { 
+  margin: 0; 
+  padding-left: 18px; 
+  color: var(--muted); 
+}
+
+.quizHead { 
+  display: flex; 
+  justify-content: space-between; 
+  color: var(--muted); 
+  margin-bottom: 12px; 
+}
+
+.prompt { 
+  background: #0d1020; 
+  border: 1px solid #22263b; 
+  border-radius: 10px; 
+  padding: 14px; 
+  white-space: pre-wrap; 
+}
+
+.options { 
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 10px; 
+  margin-top: 12px; 
+}
+
+.opt { 
+  text-align: left; 
+  background: #0d1020; 
+  border: 1px solid #2b3050; 
+  padding: 12px; 
+  border-radius: 10px; 
+  cursor: pointer; 
+}
+
+.opt.selected { 
+  outline: 2px solid var(--brand); 
+}
+
+.hint { 
+  margin-left: auto; 
+  margin-right: 8px; 
+  color: var(--ok); 
+}
+
+.quizActions { 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  gap: 10px; 
+  margin-top: 14px; 
+}
+
+.score { 
+  color: var(--muted); 
+}
+
+.badge { 
+  padding: 2px 8px; 
+  border-radius: 999px; 
+  font-weight: 700; 
+}
+
+.badge.beginner { 
+  background: #2b394b; 
+  color: #cfe3ff; 
+}
+
+.badge.intermediate { 
+  background: #2b4937; 
+  color: #caffdd; 
+}
+
+.badge.advanced { 
+  background: #4a2b2b; 
+  color: #ffd0d0; 
+}
+
+.roadmap h3 { 
+  margin: 16px 0; 
+}
+
+.block { 
+  background: #0d1020; 
+  border: 1px solid #22263b; 
+  border-radius: 12px; 
+  padding: 14px; 
+  margin: 12px 0; 
+}
+
+.block h4 { 
+  margin: 0 0 6px; 
+}
+
+.block ul { 
+  margin: 0; 
+  padding-left: 18px; 
+}
+
+.links { 
+  display: flex; 
+  gap: 10px; 
+  flex-wrap: wrap; 
+  margin-top: 8px; 
+}
+
+.links a { 
+  color: #bcd3ff; 
+  text-decoration: none; 
+}
+
+.links a:hover { 
+  text-decoration: underline; 
+}
