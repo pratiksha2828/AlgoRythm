@@ -9,14 +9,14 @@ export default function TraceFilter() {
       id: 'coding',
       name: 'Learn coding through games',
       description: 'Step through code execution and understand how programs work line by line',
-      icon: '💻',
+      
       features: ['Variable Tracking', 'Step-by-Step Execution', 'Debugging Practice', 'Code Visualization']
     },
     {
       id: 'algorithms',
       name: 'Algorithm Tracing', 
       description: 'Visualize how algorithms work with animated step-by-step execution',
-      icon: '📊',
+    
       features: ['Algorithm Animation', 'Data Structure Visualization', 'Complexity Analysis', 'Interactive Learning']
     }
   ];

@@ -8,29 +8,43 @@ export default function App() {
       title: "Learn Coding from Scratch",
       description: "Start your coding journey with our beginner-friendly courses and resources. Perfect for absolute beginners.",
       buttonText: "Get Started",
-      icon: "📚",
+      icon: "book",
       link: "/roadmap-filter"
     },
     {
       title: "Learn Through Real Time Projects",
       description: "Engage in hands-on learning with real-world coding projects. Build portfolio pieces while learning.",
       buttonText: "Join a Project",
-      icon: "🛠️",
+      icon: "code",
       link: "/projects"
     },
     {
       title: "Trace & Learn Algorithms",
       description: "Understand code execution step-by-step through visual tracing. Master algorithms and data structures.",
       buttonText: "Start Tracing",
-      icon: "🔍",
+      icon: "search",
       link: "/trace"
     },
     {
       title: "Refactor Your Code",
       description: "Improve your code quality with advanced refactoring techniques. Learn best practices from experts.",
       buttonText: "Enhance Now",
-      icon: "♻️",
+      icon: "refresh",
       link: "/refactor"
+    },
+    {
+      title: "Create Your Test",
+      description: "Design custom coding challenges and assessments. Test your skills with personalized quizzes and problems.",
+      buttonText: "Create Test",
+      icon: "edit",
+      link: "/create-test"
+    },
+    {
+      title: "Claim Your Streaks",
+      description: "Track your daily coding progress and maintain your learning streak. Earn rewards for consistent practice.",
+      buttonText: "Claim Streaks",
+      icon: "flame",
+      link: "/streaks"
     }
   ];
 
@@ -60,6 +74,8 @@ export default function App() {
             <Link to="/learn-filter" className="nav-link">Learn</Link>
             <Link to="/projects" className="nav-link">Projects</Link>
             <Link to="/community" className="nav-link">Community</Link>
+            {/*  Added News section here */}
+            <Link to="/news" className="nav-link">News</Link>
           </nav>
         </div>
       </header>
@@ -70,13 +86,17 @@ export default function App() {
         <p>Choose your path and start learning today with our curated learning experiences</p>
       </section>
 
-      {/* Cards Grid */}
-      <div className="cards-grid">
+      {/* Symmetric 6-Block Cards Grid */}
+      <div className="cards-grid-symmetric">
         {learningPaths.map((path, index) => (
-          <div key={index} className="card">
-            <div className="card-icon">
-              <span className="icon-emoji">{path.icon}</span>
-            </div>
+          <div 
+            key={index} 
+            className="card card-symmetric" 
+            style={{
+              animationDelay: `${index * 0.1}s`
+            }}
+          >
+            
             <h3>{path.title}</h3>
             <p>{path.description}</p>
             <Link to={path.link} className="btn primary card-btn">
@@ -84,13 +104,6 @@ export default function App() {
             </Link>
           </div>
         ))}
-      </div>
-
-      {/* Create Test Button after cards */}
-      <div style={{ textAlign: "center", marginTop: "30px", marginBottom: "30px" }}>
-        <Link to="/create-test" className="btn primary">
-          Create Test
-        </Link>
       </div>
 
       {/* Footer */}

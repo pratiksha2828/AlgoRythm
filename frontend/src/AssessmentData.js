@@ -2481,7 +2481,6 @@ go: {
 // Helper function to get questions based on user selections
 export const getQuestionsForAssessment = (selections, count = 20) => {
   const { field, role, language, level } = selections;
-  const questions = [];
   
   // Get questions based on field and language
   const fieldQuestions = assessmentQuestions[field] || {};

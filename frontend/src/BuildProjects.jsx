@@ -31,7 +31,7 @@ export default function BuildProjects() {
         { name: "Deployment Tutorial", link: "https://pages.github.com/" }
       ],
       tutorialLink: "https://www.youtube.com/watch?v=5bMdjkfvONE",
-      starterCode: `<!DOCTYPE html>\n<html>\n<head>\n<title>Portfolio</title>\n<link rel=\"stylesheet\" href=\"styles.css\"/>\n</head>\n<body>\n<h1>Welcome to My Portfolio</h1>\n<script src=\"script.js\"></script>\n</body>\n</html>` ,
+      starterCode: `<!DOCTYPE html>\n<html>\n<head>\n<title>Portfolio</title>\n<link rel="stylesheet" href="styles.css"/>\n</head>\n<body>\n<h1>Welcome to My Portfolio</h1>\n<script src="script.js"></script>\n</body>\n</html>` ,
       icon: "🌐",
       steps: [
         "Set up project structure with HTML, CSS, and JavaScript files",
@@ -56,7 +56,7 @@ export default function BuildProjects() {
         { name: "UI Design Examples", link: "https://uimovement.com/tag/todo/" }
       ],
       tutorialLink: "https://www.youtube.com/watch?v=Ttf3CEsEwMQ",
-      starterCode: `<!DOCTYPE html>\n<html>\n<head>\n<title>Todo App</title>\n<link rel=\"stylesheet\" href=\"styles.css\"/>\n</head>\n<body>\n<input type=\"text\" placeholder=\"Add task\"/>\n<ul id=\"taskList\"></ul>\n<script src=\"script.js\"></script>\n</body>\n</html>`,
+      starterCode: `<!DOCTYPE html>\n<html>\n<head>\n<title>Todo App</title>\n<link rel="stylesheet" href="styles.css"/>\n</head>\n<body>\n<input type="text" placeholder="Add task"/>\n<ul id="taskList"></ul>\n<script src="script.js"></script>\n</body>\n</html>`,
       icon: "✅",
       steps: [
         "Create basic HTML structure with input and task list",

@@ -60,7 +60,7 @@ export const generateRoadmapPDF = async (roadmap, selections, getLabel) => {
               <p style="margin: 5px 0 0; opacity: 0.9;">Duration: ${phase.duration}</p>
             </div>
 
-            ${phase.weeks.map((week, weekIndex) => `
+            ${phase.weeks.map((week) => `
               <div style="margin-bottom: 25px; padding: 15px; border: 1px solid #e0e0e0; border-radius: 8px;">
                 <h4 style="color: #15d19a; margin: 0 0 15px 0; font-size: 16px;">${week.week}</h4>
                 

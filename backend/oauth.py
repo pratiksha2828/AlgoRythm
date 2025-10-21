@@ -42,7 +42,7 @@ def authenticate():
     verification_uri = response["verification_uri"]
     interval = response.get("interval", 5)
 
-    print(f"\n🔑 Go to {verification_uri} and enter this code: {user_code}\n")
+    print(f"\nGo to {verification_uri} and enter this code: {user_code}\n")
 
     # Step 2: Poll GitHub until the user approves
     while True:
@@ -57,7 +57,7 @@ def authenticate():
         ).json()
 
         if "access_token" in token_response:
-            print("✅ Authentication successful!")
+            print("Authentication successful!")
             return token_response["access_token"]
 
         if token_response.get("error") == "authorization_pending":
