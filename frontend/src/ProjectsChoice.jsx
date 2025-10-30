@@ -5,7 +5,7 @@ export default function ProjectsChoice() {
     <div className="wrap">
       <header className="header">
         <div className="header-content">
-          <Link to="/" className="logo">Algorythm</Link>
+          <Link to="/" className="logo">AlgoRythm</Link>
           <nav className="nav">
             <Link to="/projects" className="nav-link">Back</Link>
           </nav>

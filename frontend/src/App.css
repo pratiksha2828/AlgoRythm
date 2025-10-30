@@ -73,8 +73,31 @@
   --radius-xl: 1.5rem;
   --radius-2xl: 2rem;
 }
+/* === FIX: Ensure background layers don't block clicks === */
+body::before,
+body::after,
+.hero::before,
+.hero::after {
+  pointer-events: none !important;
+  z-index: -1 !important;
+}
 
+/* Ensure interactive elements are clickable */
+.hero,
+.panel,
+.opt,
+button,
+.card,
+.wrap,
+.header {
+  position: relative;
+  z-index: 1;
+}
 
+.panel, .opt, .hero, button {
+  position: relative;
+  z-index: 10;
+}
 
 * { 
   box-sizing: border-box; 
@@ -130,6 +153,11 @@ body::after {
   filter: drop-shadow(0 0 12px #fff) drop-shadow(0 0 8px #ffffaa);
   opacity: 1;
 }
+body::before,
+body::after {
+  pointer-events: none !important;
+}
+
 
 
 
@@ -206,7 +234,7 @@ body::after {
   height: 2px;
   background: var(--gradient-primary); /* Already uses --primary and --secondary */
   opacity: 0.8;
-  box-shadow: 0 0 15px rgba(157, 78, 221, 0.6); /* Deep Purple glow */
+  box-shadow: 0 0 15px rgba(157, 78, 221, 0.3); /* Deep Purple glow */
 }
 
 @keyframes cosmicHeaderGlow {
@@ -325,7 +353,7 @@ body::after {
 .nav-link:hover {
   color: var(--text-primary);
   transform: translateY(-2px);
-  text-shadow: 0 0 15px rgba(100, 216, 255, 0.8);
+  text-shadow: 0 0 15px rgba(100, 216, 255, 0.4);
   box-shadow: 0 0 20px rgba(100, 216, 255, 0.4);
 }
 
@@ -649,26 +677,26 @@ body::after {
   0%, 100% { 
     box-shadow: 
       var(--shadow-md),
-      0 0 25px rgba(100, 216, 255, 0.4),
+      0 0 25px rgba(100, 216, 255, 0.2),
       0 0 50px rgba(100, 216, 255, 0.2);
   }
   25% { 
     box-shadow: 
       var(--shadow-lg),
-      0 0 30px rgba(157, 78, 221, 0.5),
-      0 0 60px rgba(157, 78, 221, 0.3);
+      0 0 30px rgba(157, 78, 221, 0.3),
+      0 0 60px rgba(157, 78, 221, 0.2);
   }
   50% { 
     box-shadow: 
       var(--shadow-lg),
-      0 0 35px rgba(100, 216, 255, 0.6),
-      0 0 70px rgba(100, 216, 255, 0.4);
+      0 0 35px rgba(100, 216, 255, 0.2),
+      0 0 70px rgba(100, 216, 255, 0.3);
   }
   75% { 
     box-shadow: 
       var(--shadow-lg),
-      0 0 30px rgba(255, 209, 102, 0.5),
-      0 0 60px rgba(255, 209, 102, 0.3);
+      0 0 30px rgba(255, 209, 102, 0.3),
+      0 0 60px rgba(255, 209, 102, 0.2);
   }
 }
 
@@ -700,12 +728,12 @@ body::after {
   box-shadow: 
     var(--shadow-lg), 
     var(--shadow-neon-purple),  /* stronger glow */
-    0 0 50px rgba(212, 91, 255, 0.3),  /* intensify main glow */
+    0 0 50px rgba(212, 91, 255, 0.2),  /* intensify main glow */
     0 0 100px rgba(255, 145, 178, 0.2), /* ambient glow */
     0 0 150px rgba(157, 78, 221, 0.2);  /* far spread */
 }
 @keyframes pulsatingGlow {
-  0%, 100% { box-shadow: 0 0 20px rgba(212,91,255,0.6); }
+  0%, 100% { box-shadow: 0 0 20px rgba(212,91,255,0.3); }
   50% { box-shadow: 0 0 50px rgba(212,91,255,1); }
 }
 
@@ -809,6 +837,26 @@ body::after {
 }
 
 /* ================= MODERN BUTTONS ================= */
+/* Specific fixes for RoadmapFilter component */
+.opt {
+  position: relative;
+  z-index: 100;
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
+.btn {
+  position: relative;
+  z-index: 100;
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
+/* Ensure panels don't block clicks */
+.panel {
+  position: relative;
+  z-index: 1;
+}
 .btn { 
   background: var(--glass-bg);
   backdrop-filter: blur(10px);
@@ -877,7 +925,7 @@ body::after {
   100% { 
     box-shadow: 
       var(--shadow-lg), 
-      0 0 35px rgba(100, 216, 255, 0.6),
+      0 0 35px rgba(100, 216, 255, 0.3),
       inset 0 1px 0 rgba(255, 255, 255, 0.3);
   }
 }
@@ -1342,6 +1390,11 @@ html {
   gap: 10px; 
   margin-top: 12px; 
 }
+.opt, .panel {
+  position: relative;
+  z-index: 10;
+}
+
 
 .opt { 
   text-align: left; 
@@ -1430,4 +1483,37 @@ html {
 
 .links a:hover { 
   text-decoration: underline; 
+}
+/* === FINAL FIX FOR ROADMAP FILTER CLICKS === */
+.opt {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  z-index: 100 !important;
+  position: relative !important;
+}
+/* === SELECTED OPTION STYLES === */
+.opt.selected { 
+  outline: 2px solid var(--primary);
+  border-color: var(--accent) !important;
+  box-shadow: 
+    0 0 15px rgba(157, 78, 221, 0.3),
+    0 0 30px rgba(212, 91, 255, 0.2),
+    0 0 45px rgba(157, 78, 221, 0.2) !important;
+  background: rgba(93, 79, 140, 0.2) !important;
+  transform: scale(1.02);
+  transition: all 0.3s ease;
+}
+
+/* Optional: Add hover effect for non-selected options */
+.opt:not(.selected):hover {
+  border-color: var(--secondary);
+  box-shadow: 0 0 10px rgba(124, 101, 169, 0.3);
+  transition: all 0.2s ease;
+}
+
+.btn {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  z-index: 100 !important;
+  position: relative !important;
 }

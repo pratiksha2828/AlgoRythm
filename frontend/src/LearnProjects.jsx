@@ -1,261 +1,180 @@
-import { useState, useEffect } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import React, { useState } from 'react';
+import './GithubAnalysis.css'; // <-- Corrected import
 
-export default function LearnProjects() {
-  const [repoUrl, setRepoUrl] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [result, setResult] = useState(null)
-  const [searchParams] = useSearchParams()
-  const navigate = useNavigate()
+const LearnProjects = () => {
+    const [repoUrl, setRepoUrl] = useState('');
+    const [email, setEmail] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [showResult, setShowResult] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [analysisResult, setAnalysisResult] = useState('');
+    const [deepwikiUrl, setDeepwikiUrl] = useState('');
+    const [errorMsg, setErrorMsg] = useState('');
 
-  // If redirected from OAuth with repo token, store it and navigate to list page
-  useEffect(() => {
-    const token = searchParams.get('repo_token')
-    const username = searchParams.get('repo_username')
-    if (token && username) {
-      localStorage.setItem('github_repo_token', token)
-      localStorage.setItem('github_repo_username', username)
-      localStorage.setItem('github_repo_time', Date.now().toString())
-      navigate('/learn/projects/repos')
-    }
-  }, [searchParams, navigate])
+    const validateInputs = () => {
+        if (!repoUrl) {
+            setErrorMsg('Please enter a GitHub repository URL');
+            return false;
+        }
+        setErrorMsg('');
+        return true;
+    };
 
+    const isValidEmail = (email) => {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    };
 
-  const handleAnalyze = async () => {
-    setError('')
-    setResult(null)
-    const trimmed = repoUrl.trim()
-    if (!trimmed) {
-      setError('Please enter a GitHub repository URL')
-      return
-    }
-    try {
-      setLoading(true)
-      const res = await fetch('http://localhost:5000/api/deepwiki/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ repoUrl: trimmed })
-      })
-      if (!res.ok) {
-        const text = await res.text()
-        throw new Error(text || 'Request failed')
-      }
-      const data = await res.json()
-      setResult(data.summary || data)
-    } catch (e) {
-      setError(e.message || 'Failed to analyze repository')
-    } finally {
-      setLoading(false)
-    }
-  }
+    const handleBasicAnalysis = async () => {
+        if (!validateInputs()) return;
+        setLoading('basic');
+        setErrorMsg('');
+        try {
+            const response = await fetch('http://localhost:5000/api/deepwiki/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ repoUrl })
+            });
+            const result = await response.json();
+            if (result.status === 'success' || result.status === 'ok') {
+                setAnalysisResult(result);
+                setShowResult(true);
+            } else {
+                setErrorMsg(result.error || 'Analysis failed.');
+            }
+        } catch {
+            setErrorMsg('Failed to analyze repository. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  return (
-    <div className="wrap">
-      <header className="header">
-        <div className="header-content">
-          <Link to="/" className="logo">Algorythm</Link>
-          <nav className="nav">
-            <Link to="/projects" className="nav-link">Back</Link>
-          </nav>
-        </div>
-      </header>
+    const handleDeepAnalysis = async () => {
+        if (!validateInputs()) return;
+        if (!isValidEmail(email)) {
+            setErrorMsg('Please enter a valid email address');
+            return;
+        }
+        setLoading('deep');
+        setErrorMsg('');
+        try {
+            const response = await fetch('http://localhost:5000/api/deepwiki/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ repoUrl, email })
+            });
+            const result = await response.json();
+            if (result.status === 'success' || result.status === 'partial_success') {
+                setShowSuccess(true);
+                setDeepwikiUrl(result.data?.deepwiki_url || '');
+            } else {
+                setErrorMsg(result.error || 'Submission failed.');
+            }
+        } catch {
+            setErrorMsg('Failed to submit for deep analysis. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
-      <section className="hero">
-        <h1>Learn Through Live Projects</h1>
-        <p>Paste a GitHub repository URL to analyze with DeepWiki-open.</p>
-      </section>
+    // Event handlers for input changes
+    const handleRepoUrlChange = (event) => {
+        setRepoUrl(event.target.value);
+        setErrorMsg('');
+    };
 
-      <div className="panel">
-        <label htmlFor="repoUrl" style={{ display: 'block', marginBottom: 8 }}>GitHub Repository URL</label>
-        <input
-          id="repoUrl"
-          type="url"
-          placeholder="https://github.com/owner/repo"
-          value={repoUrl}
-          onChange={(e) => setRepoUrl(e.target.value)}
-          style={{
-            width: '100%',
-            padding: '12px 14px',
-            borderRadius: 10,
-            border: '1px solid #2c3150',
-            background: '#0d1020',
-            color: 'var(--ink)'
-          }}
-        />
-        <div className="actions" style={{ marginTop: 12 }}>
-          <button className="btn primary" onClick={handleAnalyze} disabled={loading}>
-            {loading ? 'Analyzing…' : 'Next'}
-          </button>
-        </div>
-        {error && (
-          <div style={{ marginTop: 12, color: 'var(--warn)' }}>{error}</div>
-        )}
-      </div>
+    const handleEmailChange = (event) => {
+        setEmail(event.target.value);
+        setErrorMsg('');
+    };
 
-      {result && (
-        <div className="panel">
-          <h3 style={{ marginTop: 0 }}>{result.title || 'Analysis Summary'}</h3>
-          <p style={{ color: 'var(--muted)' }}>{result.repoUrl}</p>
-          {Array.isArray(result.findings) && (
-            <ul>
-              {result.findings.map((f, i) => (
-                <li key={i}>{f}</li>
-              ))}
-            </ul>
-          )}
-
-          {Array.isArray(result.modules) && result.modules.length > 0 && (
-            <div className="block">
-              <h4>Modules</h4>
-              <ul>
-                {result.modules.map((m, i) => (
-                  <li key={i}><strong>{m.name}</strong> — {m.description}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {Array.isArray(result.files) && result.files.length > 0 && (
-            <div className="block">
-              <h4>Files (depth-limited)</h4>
-              <div style={{ maxHeight: 320, overflow: 'auto', border: '1px solid #22263b', borderRadius: 8, padding: 12 }}>
-                <ul style={{ margin: 0 }}>
-                  {result.files.map((f, i) => (
-                    <li key={i} style={{ marginBottom: 6 }}>
-                      <code>{f.path}</code>
-                      {f.detailedExplanation && (
-                        <div style={{ color: 'var(--muted)', marginTop: 4, fontSize: '0.9rem' }}>
-                          {f.detailedExplanation}
+    return (
+        <div className="github-analysis-container">
+            <div className="container">
+                <h1>GitHub Repository Analysis</h1>
+                <p className="subtitle">Analyze any GitHub repository with basic insights or request a deeper analysis</p>
+                
+                <div className="step">
+                    <div className="step-title">
+                        <div className="step-number">1</div>
+                        <span>Repository & Contact Information</span>
+                    </div>
+                    
+                    <div className="form-group">
+                        <label htmlFor="repoUrl">GitHub Repository URL</label>
+                        <input 
+                            type="text" 
+                            id="repoUrl" 
+                            placeholder="https://github.com/username/repository"
+                            value={repoUrl}
+                            onChange={handleRepoUrlChange}
+                        />
+                    </div>
+                    
+                    <div className="form-group">
+                        <label htmlFor="email">Your Email Address</label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            placeholder="your.email@example.com"
+                            value={email}
+                            onChange={handleEmailChange}
+                        />
+                    </div>
+                    
+                    <div className="button-group">
+                        <button 
+                            id="analyzeBtn" 
+                            onClick={handleBasicAnalysis}
+                            disabled={loading}
+                        >
+                            {loading === 'basic' ? 'Analyzing...' : 'Basic Analysis'}
+                        </button>
+                        <button 
+                            id="deepAnalysisBtn" 
+                            onClick={handleDeepAnalysis}
+                            disabled={loading}
+                        >
+                            {loading === 'deep' ? 'Submitting...' : 'Get DeepWiki AI'}
+                        </button>
+                    </div>
+                    {errorMsg && (
+                        <div className="result" style={{ color: '#f87171' }}>
+                            {errorMsg}
                         </div>
-                      )}
-                      {!f.detailedExplanation && f.summary && (
-                        <div style={{ color: 'var(--muted)', marginTop: 4 }}>{f.summary}</div>
-                      )}
-                      {!f.detailedExplanation && !f.summary && f.explanation && (
-                        <div style={{ color: 'var(--muted)', marginTop: 4 }}>{f.explanation}</div>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                    )}
+                </div>
+                
+                {showResult && analysisResult && (
+                    <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+                        <h3 className="font-bold text-lg mb-4">Analysis Results</h3>
+                        <pre className="whitespace-pre-wrap">
+                            {JSON.stringify(analysisResult, null, 2)}
+                        </pre>
+                    </div>
+                )}
+                
+                {showSuccess && (
+                    <div className="mt-8 p-4 bg-green-50 border border-green-200 rounded-lg">
+                        <h3 className="font-bold text-lg text-green-800 mb-2">🎉 Success!</h3>
+                        <p className="text-green-700">
+                            Your repository has been submitted for deep analysis. 
+                            You will receive an email when your personalized AI is ready.
+                        </p>
+                        {deepwikiUrl && (
+                            <a 
+                                href={deepwikiUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="mt-4 inline-block text-blue-600 hover:underline"
+                            >
+                                View Your DeepWiki AI
+                            </a>
+                        )}
+                    </div>
+                )}
             </div>
-          )}
-
-          {Array.isArray(result.relationships) && result.relationships.length > 0 && (
-            <div className="block">
-              <h4>Relationships (imports)</h4>
-              <div style={{ maxHeight: 240, overflow: 'auto', border: '1px dashed #2c3150', borderRadius: 8, padding: 12 }}>
-                <ul style={{ margin: 0 }}>
-                  {result.relationships.slice(0, 300).map((e, i) => (
-                    <li key={i}>
-                      <code>{e.from}</code> → <code>{e.to}</code>
-                      {e.resolvedTo && (
-                        <span style={{ color: 'var(--muted)' }}> (resolved: <code>{e.resolvedTo}</code>)</span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          )}
-
-          {result.comprehensiveAnalysis && (
-            <>
-              <div className="block">
-                <h4>🏗️ Architecture Analysis</h4>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginTop: '12px' }}>
-                  <div style={{ background: 'var(--bg)', padding: '12px', borderRadius: '8px' }}>
-                    <strong>Type:</strong> {result.comprehensiveAnalysis.architecture.type}
-                  </div>
-                  <div style={{ background: 'var(--bg)', padding: '12px', borderRadius: '8px' }}>
-                    <strong>Frameworks:</strong> {result.comprehensiveAnalysis.architecture.frameworks.join(', ')}
-                  </div>
-                  <div style={{ background: 'var(--bg)', padding: '12px', borderRadius: '8px' }}>
-                    <strong>Database:</strong> {result.comprehensiveAnalysis.architecture.database}
-                  </div>
-                  <div style={{ background: 'var(--bg)', padding: '12px', borderRadius: '8px' }}>
-                    <strong>APIs:</strong> {result.comprehensiveAnalysis.architecture.api.join(', ')}
-                  </div>
-                </div>
-                <div style={{ marginTop: '12px' }}>
-                  <strong>Design Patterns:</strong> {result.comprehensiveAnalysis.architecture.patterns.join(', ')}
-                </div>
-              </div>
-
-              <div className="block">
-                <h4>📊 Code Quality Analysis</h4>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px', marginTop: '12px' }}>
-                  <div style={{ background: 'var(--bg)', padding: '12px', borderRadius: '8px' }}>
-                    <strong>Complexity:</strong> {result.comprehensiveAnalysis.codeQuality.complexity.level}
-                    <br />
-                    <small>{result.comprehensiveAnalysis.codeQuality.complexity.averageLinesPerFile} lines/file</small>
-                  </div>
-                  <div style={{ background: 'var(--bg)', padding: '12px', borderRadius: '8px' }}>
-                    <strong>Maintainability:</strong> {result.comprehensiveAnalysis.codeQuality.maintainability.level}
-                    <br />
-                    <small>Score: {result.comprehensiveAnalysis.codeQuality.maintainability.score}</small>
-                  </div>
-                  <div style={{ background: 'var(--bg)', padding: '12px', borderRadius: '8px' }}>
-                    <strong>Test Coverage:</strong> {result.comprehensiveAnalysis.codeQuality.testCoverage.level}
-                    <br />
-                    <small>{result.comprehensiveAnalysis.codeQuality.testCoverage.percentage}%</small>
-                  </div>
-                  <div style={{ background: 'var(--bg)', padding: '12px', borderRadius: '8px' }}>
-                    <strong>Security:</strong> {result.comprehensiveAnalysis.codeQuality.security.level}
-                    <br />
-                    <small>Score: {result.comprehensiveAnalysis.codeQuality.security.score}</small>
-                  </div>
-                </div>
-              </div>
-
-              {result.comprehensiveAnalysis.insights && result.comprehensiveAnalysis.insights.length > 0 && (
-                <div className="block">
-                  <h4>💡 Key Insights</h4>
-                  <ul>
-                    {result.comprehensiveAnalysis.insights.map((insight, i) => (
-                      <li key={i}>{insight}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {result.comprehensiveAnalysis.recommendations && result.comprehensiveAnalysis.recommendations.length > 0 && (
-                <div className="block">
-                  <h4>🎯 Recommendations</h4>
-                  <ul>
-                    {result.comprehensiveAnalysis.recommendations.map((rec, i) => (
-                      <li key={i}>{rec}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </>
-          )}
-
-          {result.deepwiki && (
-            <div className="block">
-              <h4>DeepWiki External Insights</h4>
-              <pre className="prompt" style={{ whiteSpace: 'pre-wrap' }}>
-{JSON.stringify(result.deepwiki, null, 2)}
-              </pre>
-            </div>
-          )}
-
-          {Array.isArray(result.nextSteps) && result.nextSteps.length > 0 && (
-            <div className="block">
-              <h4>Next Steps</h4>
-              <ul>
-                {result.nextSteps.map((n, i) => (
-                  <li key={i}>{n}</li>
-                ))}
-              </ul>
-            </div>
-          )}
         </div>
-      )}
-    </div>
-  )
-}
+    );
+};
 
-
+export default LearnProjects;

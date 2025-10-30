@@ -1682,12 +1682,11 @@ export default function RoadmapResult() {
     <div className="wrap">
       <header className="header">
         <div className="header-content">
-          <Link to="/" className="logo">Algorythm</Link>
+          <Link to="/" className="logo">AlgoRythm</Link>
           <nav className="nav">
             <Link to="/" className="nav-link">Home</Link>
             <Link to="/roadmap-filter" className="nav-link">Learn</Link>
             <Link to="/projects" className="nav-link">Projects</Link>
-            <Link to="/community" className="nav-link">Community</Link>
           </nav>
         </div>
       </header>
@@ -1830,7 +1829,6 @@ export default function RoadmapResult() {
         <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap' }}>
           <Link to="/learn" className="btn primary">Start Learning Now</Link>
           <Link to="/projects" className="btn">Practice Projects</Link>
-          <Link to="/community" className="btn">Join Community</Link>
           <Link to="/roadmap-filter" className="btn ghost">Adjust Roadmap</Link>
         </div>
       </div>

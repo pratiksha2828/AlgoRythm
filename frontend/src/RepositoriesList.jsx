@@ -47,7 +47,7 @@ const RepositoriesList = () => {
       <div className="wrap">
         <header className="header">
           <div className="header-content">
-            <Link to="/" className="logo">Algorythm</Link>
+            <Link to="/" className="logo">AlgoRythm</Link>
             <nav className="nav">
               <Link to="/projects/learn-projects" className="nav-link">Back</Link>
             </nav>

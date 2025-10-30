@@ -332,7 +332,7 @@ export default function CreateTest() {
 
         <div style={{ marginTop: '30px' }}>
           <button className="btn primary" onClick={handleCreateTest} style={{ padding: '15px 30px', fontSize: '1.1rem' }}>
-             Generate Test
+            🚀 Generate Test
           </button>
         </div>
 
@@ -401,7 +401,7 @@ export default function CreateTest() {
   if (currentView === 'testCreated') {
     return (
       <div className="wrap" style={{ textAlign: 'center', padding: '50px' }}>
-        <h1> Test Created Successfully!</h1>
+        <h1>✅ Test Created Successfully!</h1>
         <p>Your test has been generated and is ready for participants to join.</p>
 
         <div style={{
@@ -450,14 +450,14 @@ export default function CreateTest() {
             onClick={() => navigate('/test-interface', { state: { testId, mode: 'create' } })}
             style={{ padding: '15px 30px', fontSize: '1.1rem', marginRight: '10px' }}
           >
-             Start Test Now
+            🚀 Start Test Now
           </button>
           <button 
             className="btn secondary" 
             onClick={() => setShowPreview(true)}
             style={{ padding: '15px 30px', fontSize: '1.1rem', marginRight: '10px' }}
           >
-             Preview
+            👀 Preview
           </button>
           <button className="btn secondary" onClick={resetView}>
             ← Back to Test Center

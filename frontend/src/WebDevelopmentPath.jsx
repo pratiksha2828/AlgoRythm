@@ -244,7 +244,7 @@ export default function WebDevelopmentPath() {
       {/* Header */}
       <header className="header">
         <div className="header-content">
-          <Link to="/learn" className="logo">Algorythm</Link>
+          <Link to="/learn" className="logo">AlgoRythm</Link>
           <nav className="nav">
             <Link to="/" className="nav-link">Home</Link>
             <Link to="/learn" className="nav-link">Learn</Link>

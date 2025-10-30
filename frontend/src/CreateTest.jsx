@@ -1,6 +1,7 @@
 import './app.css';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { leetcode150Pool } from './leetcode150pool';
 
 export default function CreateTest() {
   const navigate = useNavigate();
@@ -46,317 +47,39 @@ export default function CreateTest() {
     return `${timestamp}-${randomStr}`.toUpperCase();
   };
 
-  // ====== Question Generation Helpers (AI + Fallback) ======
-  const normalizeProblemText = (text) => (text || '')
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-  const getProblemKey = (q) => `${normalizeProblemText(q?.problem)}::${normalizeProblemText(q?.functionSignature)}`;
-
-  // Topic taxonomies to force variety per difficulty
-  const TOPICS = {
-    easy: [
-      'strings-basic', 'arrays-basic', 'math-arithmetic', 'hashing-basics', 'two-pointers-basic',
-      'loops-conditions', 'stack-queue-basics', 'sets-and-maps-basics'
-    ],
-    medium: [
-      'sliding-window', 'binary-search', 'prefix-sums', 'greedy', 'dfs-bfs', 'sorting-variants',
-      'linked-lists', 'stacks-queues'
-    ],
-    hard: [
-      'dynamic-programming', 'graph-shortest-path', 'graph-topological', 'segment-tree', 'interval-scheduling',
-      'bitmask-dp', 'union-find', 'advanced-greedy'
-    ]
-  };
-
-  const getSampleQuestionsPool = () => ([
-    // Easy
-    {
-      difficulty: 'easy',
-      problem: 'Return the number of vowels in a given lowercase string.',
-      exampleInput: '"algorithm"',
-      expectedOutput: '3',
-      functionSignature: 'function countVowels(s) { }',
-      constraints: '1 <= s.length <= 10^5; s contains only lowercase letters',
-      testCases: [
-        { input: '"algorithm"', expected: '3', description: 'basic' },
-        { input: '"bcdfg"', expected: '0', description: 'no vowels' },
-        { input: '"aeiou"', expected: '5', description: 'all vowels' }
-      ]
-    },
-    {
-      difficulty: 'easy',
-      problem: 'Given an array of integers, return the sum of all even numbers.',
-      exampleInput: '[1,2,3,4,5,6]',
-      expectedOutput: '12',
-      functionSignature: 'function sumEvenNumbers(arr) { }',
-      constraints: '1 <= arr.length <= 10^5; -10^9 <= arr[i] <= 10^9',
-      testCases: [
-        { input: '[1,2,3,4,5,6]', expected: '12', description: 'mix' },
-        { input: '[1,3,5]', expected: '0', description: 'no evens' },
-        { input: '[2,4,6]', expected: '12', description: 'all evens' }
-      ]
-    },
-    {
-      difficulty: 'easy',
-      problem: 'Reverse a given string without using built-in reverse methods.',
-      exampleInput: '"hello"',
-      expectedOutput: '"olleh"',
-      functionSignature: 'function reverseString(s) { }',
-      constraints: '1 <= s.length <= 10^5',
-      testCases: [
-        { input: '"hello"', expected: '"olleh"', description: 'basic' },
-        { input: '"a"', expected: '"a"', description: 'single char' }
-      ]
-    },
-    // Medium
-    {
-      difficulty: 'medium',
-      problem: 'Find the length of the longest substring without repeating characters.',
-      exampleInput: '"abcabcbb"',
-      expectedOutput: '3',
-      functionSignature: 'function lengthOfLongestSubstring(s) { }',
-      constraints: '1 <= s.length <= 10^5',
-      testCases: [
-        { input: '"abcabcbb"', expected: '3', description: 'classic' },
-        { input: '"bbbbb"', expected: '1', description: 'all same' }
-      ]
-    },
-    {
-      difficulty: 'medium',
-      problem: 'Given two strings, return their longest common subsequence.',
-      exampleInput: '"ABCDGH" and "AEDFHR"',
-      expectedOutput: '"ADH"',
-      functionSignature: 'function longestCommonSubsequence(str1, str2) { }',
-      constraints: '1 <= len <= 1000',
-      testCases: [
-        { input: '"ABCDGH" and "AEDFHR"', expected: '"ADH"', description: 'example' },
-        { input: '"AGGTAB" and "GXTXAYB"', expected: '"GTAB"', description: 'another' }
-      ]
-    },
-    {
-      difficulty: 'medium',
-      problem: 'Given an integer array, find the maximum sum of a contiguous subarray (Kadane\'s algorithm).',
-      exampleInput: '[-2,1,-3,4,-1,2,1,-5,4]',
-      expectedOutput: '6',
-      functionSignature: 'function maxSubArray(nums) { }',
-      constraints: '1 <= nums.length <= 10^5; -10^4 <= nums[i] <= 10^4',
-      testCases: [
-        { input: '[-2,1,-3,4,-1,2,1,-5,4]', expected: '6', description: 'classic' }
-      ]
-    },
-    {
-      difficulty: 'medium',
-      problem: 'Return the indices of the two numbers that add up to a target (hash map).',
-      exampleInput: 'nums=[2,7,11,15], target=9',
-      expectedOutput: '[0,1]',
-      functionSignature: 'function twoSum(nums, target) { }',
-      constraints: 'Each input would have exactly one solution',
-      testCases: [
-        { input: 'nums=[3,2,4], target=6', expected: '[1,2]', description: 'basic' }
-      ]
-    },
-    // Hard (expanded pool)
-    {
-      difficulty: 'hard',
-      problem: 'Implement an LRU cache with get and put in O(1) time.',
-      exampleInput: 'LRUCache(2); put(1,1); put(2,2); get(1); put(3,3); get(2);',
-      expectedOutput: '1 then -1',
-      functionSignature: 'class LRUCache { constructor(capacity) {}; get(key) {}; put(key, value) {}; }',
-      constraints: '1 <= capacity <= 10^4; operations <= 10^5',
-      testCases: [
-        { input: 'capacity=2; ops=put(1,1),put(2,2),get(1),put(3,3),get(2)', expected: '1,-1', description: 'evict' }
-      ]
-    },
-    {
-      difficulty: 'hard',
-      problem: 'Given a directed graph, detect if it contains a cycle using DFS and return any cycle path.',
-      exampleInput: 'n=4, edges=[[0,1],[1,2],[2,0],[2,3]]',
-      expectedOutput: 'true with a cycle path like 0->1->2->0',
-      functionSignature: 'function hasDirectedCycle(n, edges) { }',
-      constraints: '1 <= n <= 10^5; 0 <= edges.length <= 2*10^5',
-      testCases: [
-        { input: 'n=4, edges=[[0,1],[1,2],[2,0],[2,3]]', expected: 'true', description: 'cycle exists' },
-        { input: 'n=3, edges=[[0,1],[1,2]]', expected: 'false', description: 'no cycle' }
-      ]
-    },
-    {
-      difficulty: 'hard',
-      problem: 'Find shortest paths from a source to all nodes in a weighted graph using Dijkstra (non-negative weights).',
-      exampleInput: 'n=5, edges={(0,1,2),(0,2,5),(1,2,1),(1,3,3),(2,3,2)} source=0',
-      expectedOutput: '[0,2,3,5,INF]',
-      functionSignature: 'function dijkstra(n, edges, source) { }',
-      constraints: '1 <= n <= 10^5; edges <= 2*10^5; weights >= 0',
-      testCases: [
-        { input: 'n=4, edges={(0,1,1),(1,2,2),(0,2,4)} source=0', expected: '[0,1,3,INF]', description: 'basic' }
-      ]
-    },
-    {
-      difficulty: 'hard',
-      problem: 'Given a set of intervals, remove the minimum number to make the rest non-overlapping.',
-      exampleInput: 'intervals=[[1,3],[2,4],[3,5]]',
-      expectedOutput: '1',
-      functionSignature: 'function eraseOverlapIntervals(intervals) { }',
-      constraints: '1 <= intervals.length <= 10^5',
-      testCases: [
-        { input: '[[1,2],[2,3],[3,4],[1,3]]', expected: '1', description: 'greedy' }
-      ]
-    },
-    {
-      difficulty: 'hard',
-      problem: 'Implement a Trie supporting insert, search, and startsWith for lowercase words.',
-      exampleInput: 'insert("apple"), search("apple"), search("app"), startsWith("app")',
-      expectedOutput: 'true, false, true',
-      functionSignature: 'class Trie { insert(word) {}; search(word) {}; startsWith(prefix) {}; }',
-      constraints: 'Total operations up to 10^5',
-      testCases: [
-        { input: 'insert("apple"), search("apple")', expected: 'true', description: 'basic' }
-      ]
+  // Get random questions from LeetCode pool
+  const getRandomQuestions = (difficulty, count) => {
+    const pool = leetcode150Pool[difficulty] || [];
+    if (count >= pool.length) {
+      return [...pool]; // Return all if count >= pool size
     }
-  ]);
-
-  const checkOllamaStatus = async () => {
-    try {
-      const resp = await Promise.race([
-        fetch('http://localhost:11434/api/tags', { method: 'GET' }),
-        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 3000))
-      ]);
-      return resp.ok;
-    } catch (e) {
-      console.error("Error checking Ollama status:", e);
-      return false;
+    
+    // Fisher-Yates shuffle and take first 'count' elements
+    const shuffled = [...pool];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
+    return shuffled.slice(0, count);
   };
 
-  const generateQuestion = async (difficulty, idx, exclude = [], attempt = 0, topic = '') => {
-    const difficultyPrompts = {
-      easy: 'Create a simple coding problem suitable for beginners. Include a clear problem statement, example input/output, and a function signature to implement.',
-      medium: 'Create an intermediate coding problem that tests common algorithms or data structures. Include a clear problem statement, example input/output, and a function signature to implement.',
-      hard: 'Create a complex coding problem that tests advanced algorithms, optimization, or system design. Include a clear problem statement, example input/output, and a function signature to implement.'
-    };
-
-    const exclusionsText = exclude.length > 0
-      ? `\nAvoid repeating or paraphrasing any of these problems:\n- ${exclude.slice(-10).join('\n- ')}`
-      : '';
-
-    const resp = await Promise.race([
-      fetch('http://localhost:11434/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'codellama:7b',
-          prompt: `${difficultyPrompts[difficulty]}${exclusionsText}\n\nTopic: ${topic || 'any distinct topic for this difficulty'}\nThe problem MUST be about the specified topic and not reuse recent problems.\nUse different input domains and constraints than excluded ones.\n\nFormat the response strictly as:\nProblem: [problem statement]\nExample Input: [input]\nExpected Output: [output]\nFunction Signature: [function signature]\nConstraints: [constraints]\nUniqueness token: ${difficulty}-${idx}-attempt${attempt}-${Date.now()}`,
-          stream: false
-        })
-      }),
-      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 10000))
-    ]);
-
-    if (!resp.ok) throw new Error('ollama http error');
-    const data = await resp.json();
-    const generatedText = data.response || '';
-    const lines = generatedText.split('\n').filter(l => l.trim());
-    const problem = lines.find(l => l.startsWith('Problem:'))?.replace('Problem:', '').trim() || '';
-    const exampleInput = lines.find(l => l.startsWith('Example Input:'))?.replace('Example Input:', '').trim() || '';
-    const expectedOutput = lines.find(l => l.startsWith('Expected Output:'))?.replace('Expected Output:', '').trim() || '';
-    const functionSignature = lines.find(l => l.startsWith('Function Signature:'))?.replace('Function Signature:', '').trim() || '';
-    const constraints = lines.find(l => l.startsWith('Constraints:'))?.replace('Constraints:', '').trim() || '';
-
-    return {
-      id: `${difficulty}-${idx}`,
-      difficulty,
-      problem,
-      exampleInput,
-      expectedOutput,
-      functionSignature,
-      constraints,
-      testCases: [ { input: exampleInput, expected: expectedOutput, description: 'example' } ]
-    };
-  };
-
-  const generateQuestionsForConfig = async (counts) => {
-    const isOllama = await checkOllamaStatus();
+  // Generate questions from LeetCode pool
+  const generateQuestionsFromPool = (counts) => {
     const created = [];
-    const seen = new Set(); // keys of problem+signature
-    const seenTexts = []; // raw normalized problem texts to help LLM exclusions
-    const pool = getSampleQuestionsPool();
-    // load recent global problems to avoid across sessions
-    let recentGlobal = [];
-    try { recentGlobal = JSON.parse(localStorage.getItem('recentProblems') || '[]'); } catch {
-      //Ignore
-    }
-    if (!Array.isArray(recentGlobal)) recentGlobal = [];
-    const recentSet = new Set(recentGlobal);
-
-    const takeSample = (difficulty, ordinal) => {
-      const candidates = pool.filter(q => q.difficulty === difficulty);
-      for (let i = 0; i < candidates.length; i++) {
-        const q = candidates[(ordinal - 1 + i) % candidates.length];
-        const key = getProblemKey(q);
-        const norm = normalizeProblemText(q.problem);
-        if (!seen.has(key) && !recentSet.has(key)) {
-          seen.add(key);
-          seenTexts.push(norm);
-          return { ...q, id: `${difficulty}-${ordinal}` };
-        }
-      }
-      const q = candidates[(ordinal - 1) % candidates.length];
-      return { ...q, id: `${difficulty}-${ordinal}` };
-    };
-
+    
     for (const [difficulty, countRaw] of Object.entries(counts)) {
       const count = Math.max(0, parseInt(countRaw || 0));
-      const topics = TOPICS[difficulty] || [];
-      const usedTopics = new Set();
-      for (let i = 0; i < count; i++) {
-        const ordinal = i + 1;
-        if (isOllama) {
-          let q = null;
-          let attempt = 0;
-          let gotUnique = false;
-          while (attempt < 5) {
-            try {
-              // choose a topic distinct within this generation
-              let topic = topics.length ? topics[(i + attempt) % topics.length] : '';
-              while (topic && usedTopics.has(topic) && attempt < 5) {
-                attempt++;
-                topic = topics.length ? topics[(i + attempt) % topics.length] : '';
-              }
-              q = await generateQuestion(difficulty, ordinal, [...seenTexts, ...recentGlobal.map(k => k.split('::')[0])], attempt, topic);
-              const key = getProblemKey(q);
-              const norm = normalizeProblemText(q.problem);
-              if (normalizeProblemText(q.problem) && !seen.has(key) && !recentSet.has(key)) {
-                seen.add(key);
-                seenTexts.push(norm);
-                if (topic) usedTopics.add(topic);
-                gotUnique = true;
-                break;
-              }
-            } catch (e) {
-              console.error('Error generating question from Ollama,Please try again:', e);
-            }
-            attempt++;
-          }
-          if (!q || !gotUnique) q = takeSample(difficulty, ordinal);
-          created.push(q);
-        } else {
-          created.push(takeSample(difficulty, ordinal));
-        }
+      if (count > 0) {
+        const questions = getRandomQuestions(difficulty, count);
+        created.push(...questions);
       }
     }
-    // persist recent problems (cap to 100)
-    const merged = [...recentGlobal, ...created.map(getProblemKey).filter(Boolean)];
-    const dedup = Array.from(new Set(merged)).slice(-200);
-    try { localStorage.setItem('recentProblems', JSON.stringify(dedup)); } catch {
-      //Ignore
-    }
+    
     return created;
   };
 
   // Validate test ID format
   const isValidTestIdFormat = (id) => {
-    // Test ID format: TIMESTAMP-RANDOM (e.g., "1A2B3C4D-EFGHI")
     const testIdPattern = /^[A-Z0-9]+-[A-Z0-9]{5}$/;
     return testIdPattern.test(id);
   };
@@ -390,17 +113,20 @@ export default function CreateTest() {
     // Add the new test ID to valid test IDs
     setValidTestIds(prev => new Set([...prev, newTestId]));
 
-    // Generate questions now (AI + fallback), store by testId, and show in preview
     try {
       setIsGenerating(true);
-      const created = await generateQuestionsForConfig({
+      const created = generateQuestionsFromPool({
         easy: questions.easy,
         medium: questions.medium,
         hard: questions.hard
       });
       setGeneratedQuestions(created);
       // Persist for joiners
-      localStorage.setItem(`test:${newTestId}`, JSON.stringify({ id: newTestId, createdAt: Date.now(), questions: created }));
+      localStorage.setItem(`test:${newTestId}`, JSON.stringify({ 
+        id: newTestId, 
+        createdAt: Date.now(), 
+        questions: created 
+      }));
       setCurrentView('testCreated');
     } catch (e) {
       console.error('Failed generating questions', e);
@@ -419,25 +145,22 @@ export default function CreateTest() {
       return;
     }
     
-    // Check if the test ID has the correct format
     if (!isValidTestIdFormat(trimmedId)) {
       alert('Invalid Test ID format. Please enter a valid Test ID (e.g., 1A2B3C4D-EFGHI).');
       return;
     }
     
-    // Check if the test ID exists in our valid test IDs
     if (!isTestIdValid(trimmedId)) {
       alert('Test ID not found. Please make sure you have the correct Test ID from the test creator.');
       return;
     }
     
-    // Ensure questions exist for this testId
     const saved = localStorage.getItem(`test:${trimmedId}`);
     if (!saved) {
       alert('This Test ID has no generated questions yet. Ask the creator to generate the test first.');
       return;
     }
-    // Navigate to test interface with testId only
+    
     navigate('/test-interface', { state: { testId: trimmedId, mode: 'join' } });
   };
 
@@ -456,6 +179,17 @@ export default function CreateTest() {
     setGeneratedQuestions([]);
     setShowPreview(false);
   };
+
+  // Get available question counts for each difficulty
+  const getAvailableCounts = () => {
+    return {
+      easy: leetcode150Pool.easy?.length || 0,
+      medium: leetcode150Pool.medium?.length || 0,
+      hard: leetcode150Pool.hard?.length || 0
+    };
+  };
+
+  const availableCounts = getAvailableCounts();
 
   // Main view with Test button
   if (currentView === 'main') {
@@ -511,6 +245,9 @@ export default function CreateTest() {
       <div className="wrap" style={{ textAlign: 'center', padding: '50px' }}>
         <h1>Create New Test</h1>
         <p>Configure your test by selecting the number of questions for each difficulty level:</p>
+        <p style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>
+          Questions are randomly selected from a pool of {availableCounts.easy + availableCounts.medium + availableCounts.hard} LeetCode-style problems
+        </p>
 
         <div style={{ 
           display: 'flex', 
@@ -532,8 +269,11 @@ export default function CreateTest() {
           }}>
             <div style={{ fontSize: '2rem', marginBottom: '10px' }}>🟢</div>
             <h3 style={{ color: '#4CAF50', marginBottom: '15px' }}>Easy</h3>
-            <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '20px' }}>
+            <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '10px' }}>
               Basic concepts, simple algorithms
+            </p>
+            <p style={{ color: '#4CAF50', fontSize: '0.8rem', marginBottom: '15px' }}>
+              Available: {availableCounts.easy} questions
             </p>
             <input
               type="number"
@@ -543,7 +283,7 @@ export default function CreateTest() {
               placeholder="0"
               className="input-field"
               min="0"
-              max="20"
+              max={availableCounts.easy}
               style={{ 
                 width: '80px', 
                 textAlign: 'center',
@@ -564,8 +304,11 @@ export default function CreateTest() {
           }}>
             <div style={{ fontSize: '2rem', marginBottom: '10px' }}>🟡</div>
             <h3 style={{ color: '#FF9800', marginBottom: '15px' }}>Medium</h3>
-            <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '20px' }}>
+            <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '10px' }}>
               Intermediate problems, common patterns
+            </p>
+            <p style={{ color: '#FF9800', fontSize: '0.8rem', marginBottom: '15px' }}>
+              Available: {availableCounts.medium} questions
             </p>
             <input
               type="number"
@@ -575,7 +318,7 @@ export default function CreateTest() {
               placeholder="0"
               className="input-field"
               min="0"
-              max="20"
+              max={availableCounts.medium}
               style={{ 
                 width: '80px', 
                 textAlign: 'center',
@@ -596,8 +339,11 @@ export default function CreateTest() {
           }}>
             <div style={{ fontSize: "2rem", marginBottom: '10px' }}>🔴</div>
             <h3 style={{ color: '#f44336', marginBottom: '15px' }}>Hard</h3>
-            <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '20px' }}>
+            <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '10px' }}>
               Complex algorithms, optimization challenges
+            </p>
+            <p style={{ color: '#f44336', fontSize: '0.8rem', marginBottom: '15px' }}>
+              Available: {availableCounts.hard} questions
             </p>
             <input
               type="number"
@@ -607,7 +353,7 @@ export default function CreateTest() {
               placeholder="0"
               className="input-field"
               min="0"
-              max="20"
+              max={availableCounts.hard}
               style={{ 
                 width: '80px', 
                 textAlign: 'center',

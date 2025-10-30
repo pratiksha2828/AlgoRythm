@@ -31,12 +31,11 @@ export default function TraceFilter() {
       {/* Header */}
       <header className="header">
         <div className="header-content">
-          <Link to="/" className="logo">Algorythm</Link>
+          <Link to="/" className="logo">AlgoRythm</Link>
           <nav className="nav">
             <Link to="/" className="nav-link">Home</Link>
             <Link to="/learn" className="nav-link">Learn</Link>
             <Link to="/projects" className="nav-link">Projects</Link>
-            <Link to="/community" className="nav-link">Community</Link>
           </nav>
         </div>
       </header>
@@ -105,7 +104,7 @@ export default function TraceFilter() {
         </div>
         
         <div className="footer-bottom">
-          <p>© 2025 CodeCraf. Master coding through visual learning.</p>
+          <p>© 2025 AlgoRythm. Master coding through visual learning.</p>
         </div>
       </footer>
     </div>

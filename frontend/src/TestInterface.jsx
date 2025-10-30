@@ -19,7 +19,8 @@ export default function TestInterface() {
   const [currentQuestionData, setCurrentQuestionData] = useState(null);
   const [submissionResult, setSubmissionResult] = useState(null);
   const [testCompleted, setTestCompleted] = useState(false);
-  const [score, setScore] = useState(0);
+  // eslint-disable-next-line no-empty-pattern
+  const [] = useState(0);
 
   // Initialize questions by loading from localStorage using testId
   useEffect(() => {
@@ -63,278 +64,10 @@ export default function TestInterface() {
       
       const response = await Promise.race([fetchPromise, timeoutPromise]);
       return response.ok;
+    // eslint-disable-next-line no-unused-vars
     } catch (error) {
       return false;
     }
-  };
-
-  // Normalize problem text for duplicate detection
-  const normalizeProblemText = (text) => (text || '').toLowerCase().replace(/\s+/g, ' ').trim();
-
-  // Generate test questions using Ollama CodeLlama
-  const generateTestQuestions = async () => {
-    setIsLoading(true);
-    
-    // First check if Ollama is running
-    const isOllamaRunning = await checkOllamaStatus();
-    
-    if (!isOllamaRunning) {
-      console.log('Ollama not running, using sample questions');
-      const sampleQuestions = getSampleQuestions();
-      setTestQuestions(sampleQuestions);
-      if (sampleQuestions.length > 0) {
-        setCurrentQuestionData(sampleQuestions[0]);
-        setCurrentDifficulty(sampleQuestions[0].difficulty);
-      }
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      const questions = [];
-      const seenProblems = new Set();
-      
-      // Generate questions for each difficulty level
-      for (const [difficulty, count] of Object.entries(questionsConfig)) {
-        const numQuestions = parseInt(count || 0);
-        if (numQuestions > 0) {
-          for (let i = 0; i < numQuestions; i++) {
-            try {
-              let question = null;
-              let attempt = 0;
-              // Try up to 3 times to avoid duplicates by varying the prompt
-              while (attempt < 3) {
-                // provide exclusions to help model diversify
-                const exclusions = Array.from(seenProblems);
-                question = await generateQuestion(difficulty, i + 1, exclusions, attempt);
-                const normalized = normalizeProblemText(question?.problem);
-                if (normalized && !seenProblems.has(normalized)) {
-                  seenProblems.add(normalized);
-                  break;
-                }
-                attempt++;
-              }
-              if (!question) {
-                // absolute fallback
-                question = getSampleQuestion(difficulty, i + 1);
-              } else {
-                // if still duplicate after retries, force choose a sample that's not duplicate
-                const normalized = normalizeProblemText(question.problem);
-                if (!normalized || seenProblems.has(normalized)) {
-                  const sample = getSampleQuestion(difficulty, i + 1, seenProblems);
-                  const normSample = normalizeProblemText(sample.problem);
-                  if (normSample && !seenProblems.has(normSample)) {
-                    seenProblems.add(normSample);
-                    question = sample;
-                  }
-                }
-              }
-              questions.push(question);
-            } catch (error) {
-              console.error(`Error generating ${difficulty} question ${i + 1}:`, error);
-              // Add fallback question for this difficulty ensuring uniqueness
-              const fallback = getSampleQuestion(difficulty, i + 1, seenProblems);
-              const norm = normalizeProblemText(fallback.problem);
-              if (norm && !seenProblems.has(norm)) seenProblems.add(norm);
-              questions.push(fallback);
-            }
-          }
-        }
-      }
-      
-      setTestQuestions(questions);
-      if (questions.length > 0) {
-        setCurrentQuestionData(questions[0]);
-        setCurrentDifficulty(questions[0].difficulty);
-      }
-    } catch (error) {
-      console.error('Error generating questions:', error);
-      // Fallback to sample questions if Ollama is not available
-      const sampleQuestions = getSampleQuestions();
-      setTestQuestions(sampleQuestions);
-      if (sampleQuestions.length > 0) {
-        setCurrentQuestionData(sampleQuestions[0]);
-        setCurrentDifficulty(sampleQuestions[0].difficulty);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Generate a single question using Ollama CodeLlama
-  const generateQuestion = async (difficulty, questionNum, excludeProblems = [], attempt = 0) => {
-    const difficultyPrompts = {
-      easy: "Create a simple coding problem suitable for beginners. Include a clear problem statement, example input/output, and a function signature to implement.",
-      medium: "Create an intermediate coding problem that tests common algorithms or data structures. Include a clear problem statement, example input/output, and a function signature to implement.",
-      hard: "Create a complex coding problem that tests advanced algorithms, optimization, or system design. Include a clear problem statement, example input/output, and a function signature to implement."
-    };
-
-    // Create a timeout promise
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Request timeout')), 10000); // 10 second timeout
-    });
-
-    try {
-      const uniquenessKey = `${difficulty}-${questionNum}-attempt${attempt}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-      const exclusionsText = excludeProblems && excludeProblems.length > 0
-        ? `\nDo not repeat, rephrase, or paraphrase ANY of these problem statements (ensure a different topic and constraints):\n- ${excludeProblems.slice(-10).join('\n- ')}`
-        : '';
-      const fetchPromise = fetch('http://localhost:11434/api/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'codellama:7b',
-          prompt: `${difficultyPrompts[difficulty]}${exclusionsText}\n\nStrongly enforce uniqueness. Prefer a different topic, input domain, and edge cases.\nUniqueness key: ${uniquenessKey}\n\nFormat the response strictly as:\nProblem: [problem statement]\nExample Input: [input]\nExpected Output: [output]\nFunction Signature: [function signature]\nConstraints: [constraints]`,
-          stream: false,
-        }),
-      });
-
-      const response = await Promise.race([fetchPromise, timeoutPromise]);
-
-      if (response.ok) {
-        const data = await response.json();
-        const generatedText = data.response;
-        
-        // Parse the generated question
-        const lines = generatedText.split('\n').filter(line => line.trim());
-        const problem = lines.find(line => line.startsWith('Problem:'))?.replace('Problem:', '').trim() || 'Solve this coding problem';
-        const exampleInput = lines.find(line => line.startsWith('Example Input:'))?.replace('Example Input:', '').trim() || '';
-        const expectedOutput = lines.find(line => line.startsWith('Expected Output:'))?.replace('Expected Output:', '').trim() || '';
-        const functionSignature = lines.find(line => line.startsWith('Function Signature:'))?.replace('Function Signature:', '').trim() || '';
-        const constraints = lines.find(line => line.startsWith('Constraints:'))?.replace('Constraints:', '').trim() || '';
-
-        return {
-          id: `${difficulty}-${questionNum}`,
-          difficulty,
-          problem,
-          exampleInput,
-          expectedOutput,
-          functionSignature,
-          constraints,
-          testCases: generateTestCases(problem, exampleInput, expectedOutput)
-        };
-      } else {
-        throw new Error(`HTTP error: ${response.status}`);
-      }
-    } catch (error) {
-      console.error('Error generating question:', error);
-      throw error; // Re-throw to be caught by the calling function
-    }
-  };
-
-  // Generate test cases for the question
-  const generateTestCases = (problem, exampleInput, expectedOutput) => {
-    return [
-      {
-        input: exampleInput,
-        expected: expectedOutput,
-        description: "Example test case"
-      }
-    ];
-  };
-
-  // Sample questions as fallback (expanded pool for diversity)
-  const getSampleQuestions = () => {
-    return [
-      // Easy
-      {
-        id: 'easy-1',
-        difficulty: 'easy',
-        problem: 'Return the number of vowels in a given lowercase string.',
-        exampleInput: '"algorithm"',
-        expectedOutput: '3',
-        functionSignature: 'function countVowels(s) { }',
-        constraints: '1 <= s.length <= 10^5; s contains only lowercase letters',
-        testCases: [
-          { input: '"algorithm"', expected: '3', description: 'basic' },
-          { input: '"bcdfg"', expected: '0', description: 'no vowels' },
-          { input: '"aeiou"', expected: '5', description: 'all vowels' }
-        ]
-      },
-      {
-        id: 'easy-2',
-        difficulty: 'easy',
-        problem: 'Given an array of integers, return the sum of all even numbers.',
-        exampleInput: '[1,2,3,4,5,6]',
-        expectedOutput: '12',
-        functionSignature: 'function sumEvenNumbers(arr) { }',
-        constraints: '1 <= arr.length <= 10^5; -10^9 <= arr[i] <= 10^9',
-        testCases: [
-          { input: '[1,2,3,4,5,6]', expected: '12', description: 'mix' },
-          { input: '[1,3,5]', expected: '0', description: 'no evens' },
-          { input: '[2,4,6]', expected: '12', description: 'all evens' }
-        ]
-      },
-      {
-        id: 'easy-3',
-        difficulty: 'easy',
-        problem: 'Reverse a given string without using built-in reverse methods.',
-        exampleInput: '"hello"',
-        expectedOutput: '"olleh"',
-        functionSignature: 'function reverseString(s) { }',
-        constraints: '1 <= s.length <= 10^5',
-        testCases: [
-          { input: '"hello"', expected: '"olleh"', description: 'basic' },
-          { input: '"a"', expected: '"a"', description: 'single char' }
-        ]
-      },
-      // Medium
-      {
-        id: 'medium-1',
-        difficulty: 'medium',
-        problem: 'Find the length of the longest substring without repeating characters.',
-        exampleInput: '"abcabcbb"',
-        expectedOutput: '3',
-        functionSignature: 'function lengthOfLongestSubstring(s) { }',
-        constraints: '1 <= s.length <= 10^5',
-        testCases: [
-          { input: '"abcabcbb"', expected: '3', description: 'classic' },
-          { input: '"bbbbb"', expected: '1', description: 'all same' }
-        ]
-      },
-      {
-        id: 'medium-2',
-        difficulty: 'medium',
-        problem: 'Given two strings, return their longest common subsequence.',
-        exampleInput: '"ABCDGH" and "AEDFHR"',
-        expectedOutput: '"ADH"',
-        functionSignature: 'function longestCommonSubsequence(str1, str2) { }',
-        constraints: '1 <= len <= 1000',
-        testCases: [
-          { input: '"ABCDGH" and "AEDFHR"', expected: '"ADH"', description: 'example' },
-          { input: '"AGGTAB" and "GXTXAYB"', expected: '"GTAB"', description: 'another' }
-        ]
-      },
-      // Hard
-      {
-        id: 'hard-1',
-        difficulty: 'hard',
-        problem: 'Implement an LRU cache with get and put in O(1) time.',
-        exampleInput: 'LRUCache(2); put(1,1); put(2,2); get(1); put(3,3); get(2);',
-        expectedOutput: '1 then -1',
-        functionSignature: 'class LRUCache { constructor(capacity) {}; get(key) {}; put(key, value) {}; }',
-        constraints: '1 <= capacity <= 10^4; operations <= 10^5',
-        testCases: [
-          { input: 'capacity=2; ops=put(1,1),put(2,2),get(1),put(3,3),get(2)', expected: '1,-1', description: 'evict' }
-        ]
-      }
-    ];
-  };
-
-  const getSampleQuestion = (difficulty, questionNum, seenProblemsSet) => {
-    const samples = getSampleQuestions().filter(q => q.difficulty === difficulty);
-    if (samples.length === 0) return getSampleQuestions()[0];
-    // rotate based on question number and prefer ones not seen yet
-    const seen = seenProblemsSet || new Set();
-    for (let idx = 0; idx < samples.length; idx++) {
-      const candidate = samples[(questionNum - 1 + idx) % samples.length];
-      const norm = normalizeProblemText(candidate.problem);
-      if (!seen.has(norm)) return candidate;
-    }
-    // if all seen, return by rotation anyway
-    return samples[(questionNum - 1) % samples.length];
   };
 
   // Submit code for evaluation
@@ -348,6 +81,20 @@ export default function TestInterface() {
     setSubmissionResult(null);
 
     try {
+      const isOllamaRunning = await checkOllamaStatus();
+      
+      if (!isOllamaRunning) {
+        // Fallback evaluation when Ollama is not available
+        setSubmissionResult({
+          refactoringPotential: '50%',
+          refactoringPercentage: 50,
+          feedback: 'Ollama is not running. Code evaluation requires Ollama to be running locally. Please start Ollama and try again.',
+          testResults: 'Evaluation unavailable',
+          rawEvaluation: 'Ollama service not available'
+        });
+        return;
+      }
+
       const response = await fetch('http://localhost:11434/api/generate', {
         method: 'POST',
         headers: {
@@ -489,10 +236,19 @@ Test Results: [X/Y test cases passed]`,
           maxWidth: '500px',
           border: '2px solid var(--brand)'
         }}>
-          <h2>Your Score: {score} / {totalQuestions * 100}</h2>
+          <h2>Test Summary</h2>
           <p style={{ color: 'var(--muted)' }}>
-            Average Score: {Math.round(score / totalQuestions)}%
+            You completed {totalQuestions} questions in {formatTime(3600 - timeLeft)}
           </p>
+          <div style={{ 
+            marginTop: '20px', 
+            padding: '15px', 
+            background: 'var(--bg)', 
+            borderRadius: '8px' 
+          }}>
+            <p><strong>Questions Completed:</strong> {totalQuestions}</p>
+            <p><strong>Time Taken:</strong> {formatTime(3600 - timeLeft)}</p>
+          </div>
         </div>
         <div style={{ marginTop: '30px' }}>
           <Link to="/create-test" className="btn primary">

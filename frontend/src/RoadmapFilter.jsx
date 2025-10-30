@@ -15,35 +15,35 @@ export default function RoadmapFilter() {
 
   const options = {
     level: [
-      { id: 'beginner', label: 'Beginner (0-1 year)', emoji: '👶' },
-      { id: 'intermediate', label: 'Intermediate (1-3 years)', emoji: '🚀' },
-      { id: 'advanced', label: 'Advanced (3+ years)', emoji: '🔥' }
+      { id: 'beginner', label: 'Beginner (0-1 year)'},
+      { id: 'intermediate', label: 'Intermediate (1-3 years)' },
+      { id: 'advanced', label: 'Advanced (3+ years)' }
     ],
     field: [
-      { id: 'web', label: 'Web Development', emoji: '💻' },
-      { id: 'mobile', label: 'Mobile Development', emoji: '📱' },
-      { id: 'data', label: 'Data Science', emoji: '📊' },
-      { id: 'ai', label: 'AI/ML', emoji: '🤖' },
-      { id: 'devops', label: 'DevOps', emoji: '☁️' },
-      { id: 'game', label: 'Game Development', emoji: '🎮' }
+      { id: 'web', label: 'Web Development' },
+      { id: 'mobile', label: 'Mobile Development' },
+      { id: 'data', label: 'Data Science' },
+      { id: 'ai', label: 'AI/ML' },
+      { id: 'devops', label: 'DevOps' },
+      { id: 'game', label: 'Game Development'}
     ],
     role: [
-      { id: 'frontend', label: 'Frontend Developer', emoji: '🎨' },
-      { id: 'backend', label: 'Backend Developer', emoji: '⚙️' },
-      { id: 'fullstack', label: 'Fullstack Developer', emoji: '🔧' },
-      { id: 'data-scientist', label: 'Data Scientist', emoji: '📈' },
-      { id: 'devops-engineer', label: 'DevOps Engineer', emoji: '🔄' },
-      { id: 'mobile-developer', label: 'Mobile Developer', emoji: '📲' }
+      { id: 'frontend', label: 'Frontend Developer' },
+      { id: 'backend', label: 'Backend Developer'},
+      { id: 'fullstack', label: 'Fullstack Developer' },
+      { id: 'data-scientist', label: 'Data Scientist' },
+      { id: 'devops-engineer', label: 'DevOps Engineer' },
+      { id: 'mobile-developer', label: 'Mobile Developer' }
     ],
     language: [
-      { id: 'javascript', label: 'JavaScript', emoji: '🟨' },
-      { id: 'python', label: 'Python', emoji: '🐍' },
-      { id: 'java', label: 'Java', emoji: '☕' },
-      { id: 'csharp', label: 'C#', emoji: '🔷' },
-      { id: 'php', label: 'PHP', emoji: '🐘' },
-      { id: 'ruby', label: 'Ruby', emoji: '💎' },
-      { id: 'go', label: 'Go', emoji: '🐹' },
-      { id: 'rust', label: 'Rust', emoji: '🦀' }
+      { id: 'javascript', label: 'JavaScript' },
+      { id: 'python', label: 'Python' },
+      { id: 'java', label: 'Java' },
+      { id: 'csharp', label: 'C#' },
+      { id: 'php', label: 'PHP'},
+      { id: 'ruby', label: 'Ruby' },
+      { id: 'go', label: 'Go' },
+      { id: 'rust', label: 'Rust' }
     ]
   };
 
@@ -106,17 +106,16 @@ export default function RoadmapFilter() {
       
       <header className="header">
         <div className="header-content">
-          <Link to="/" className="logo">Algorythm</Link>
+          <Link to="/" className="logo">AlgoRythm</Link>
           <nav className="nav">
             <Link to="/" className="nav-link">Home</Link>
             <Link to="/roadmap-filter" className="nav-link">Learn</Link>
             <Link to="/projects" className="nav-link">Projects</Link>
-            <Link to="/community" className="nav-link">Community</Link>
           </nav>
         </div>
       </header>
 
-      /* Hero Section */
+      {/* Hero Section */}
       <section className="hero">
         <h1>Create Your Learning Roadmap</h1>
         <p>Customize your learning path based on your goals and preferences</p>

@@ -51,15 +51,15 @@ export default function App() {
   const footerSections = [
     {
       title: "Resources",
-      links: ["Community", "Contact", "Blog", "Events", "Email Us"]
+      links: ["Contact", "Blog", "Events", "Email Us"]
     },
     {
       title: "Learning Paths", 
-      links: ["Beginner", "Intermediate", "Advanced", "Career Paths", "Certifications"]
+      links: ["Beginner", "Intermediate", "Advanced"]
     },
     {
       title: "Support",
-      links: ["Help Center", "Tutorials", "Documentation", "FAQ", "Feedback"]
+      links: ["Help Center", "Tutorials", "FAQ", "Feedback"]
     }
   ];
 
@@ -68,13 +68,12 @@ export default function App() {
       {/* Header */}
       <header className="header">
         <div className="header-content">
-          <Link to="/" className="logo">Algorythm</Link>
+          <Link to="/" className="logo">AlgoRythm</Link>
           <nav className="nav">
             <Link to="/" className="nav-link">Home</Link>
             <Link to="/learn-filter" className="nav-link">Learn</Link>
             <Link to="/projects" className="nav-link">Projects</Link>
-            <Link to="/community" className="nav-link">Community</Link>
-            {/*  Added News section here */}
+            {/* ✅ Added News section here */}
             <Link to="/news" className="nav-link">News</Link>
           </nav>
         </div>
@@ -124,7 +123,7 @@ export default function App() {
         </div>
         
         <div className="footer-bottom">
-          <p>© 2025 Algorythm. All rights reserved. Built with passion for developers.</p>
+          <p>© 2025 AlgoRythm. All rights reserved. Built with passion for developers.</p>
         </div>
       </footer>
     </div>

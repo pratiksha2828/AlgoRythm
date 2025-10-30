@@ -31,7 +31,8 @@ export default function BuildProjects() {
         { name: "Deployment Tutorial", link: "https://pages.github.com/" }
       ],
       tutorialLink: "https://www.youtube.com/watch?v=5bMdjkfvONE",
-      starterCode: `<!DOCTYPE html>\n<html>\n<head>\n<title>Portfolio</title>\n<link rel="stylesheet" href="styles.css"/>\n</head>\n<body>\n<h1>Welcome to My Portfolio</h1>\n<script src="script.js"></script>\n</body>\n</html>` ,
+starterCode: `<!DOCTYPE html>\n<html>\n<head>\n<title>Portfolio</title>\n<link rel="stylesheet" href="styles.css"/>\n</head>\n<body>\n<h1>Welcome to My Portfolio</h1>\n<script src="script.js"></script>\n</body>\n</html>`,
+ 
       icon: "🌐",
       steps: [
         "Set up project structure with HTML, CSS, and JavaScript files",
@@ -55,8 +56,8 @@ export default function BuildProjects() {
         { name: "Local Storage Guide", link: "https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage" },
         { name: "UI Design Examples", link: "https://uimovement.com/tag/todo/" }
       ],
-      tutorialLink: "https://www.youtube.com/watch?v=Ttf3CEsEwMQ",
-      starterCode: `<!DOCTYPE html>\n<html>\n<head>\n<title>Todo App</title>\n<link rel="stylesheet" href="styles.css"/>\n</head>\n<body>\n<input type="text" placeholder="Add task"/>\n<ul id="taskList"></ul>\n<script src="script.js"></script>\n</body>\n</html>`,
+       tutorialLink: "https://www.youtube.com/watch?v=Ttf3CEsEwMQ",
+  starterCode: `<!DOCTYPE html>\n<html>\n<head>\n<title>Todo App</title>\n<link rel="stylesheet" href="styles.css"/>\n</head>\n<body>\n<input type="text" placeholder="Add task"/>\n<ul id="taskList"></ul>\n<script src="script.js"></script>\n</body>\n</html>`,
       icon: "✅",
       steps: [
         "Create basic HTML structure with input and task list",
@@ -344,7 +345,7 @@ export default function BuildProjects() {
       {/* Header */}
       <header className="header">
         <div className="header-content">
-          <Link to="/" className="logo">Algorythm</Link>
+          <Link to="/" className="logo">AlgoRythm</Link>
           <nav className="nav">
             <Link to="/" className="nav-link">Home</Link>
             <Link to="/learn" className="nav-link">Learn</Link>

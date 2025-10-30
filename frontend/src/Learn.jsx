@@ -68,12 +68,11 @@ export default function Learn() {
       {/* Header */}
       <header className="header">
         <div className="header-content">
-          <Link to="/" className="logo">CodeCraf</Link>
+          <Link to="/" className="logo">AlgoRythm</Link>
           <nav className="nav">
             <Link to="/" className="nav-link">Home</Link>
             <Link to="/learn" className="nav-link">Learn</Link>
             <Link to="/projects" className="nav-link">Projects</Link>
-            <Link to="/community" className="nav-link">Community</Link>
           </nav>
         </div>
       </header>
@@ -127,8 +126,8 @@ export default function Learn() {
                 </ul>
               </div>
               <Link to={`/learn/${path.slug}`} className="btn primary card-btn">
-  Explore Path
-</Link>
+                Explore Path
+              </Link>
             </div>
           ))}
         </div>
@@ -140,9 +139,9 @@ export default function Learn() {
         <p style={{color: 'var(--muted)', maxWidth: '500px', margin: '0 auto 30px'}}>
           Join thousands of students who started with zero experience and are now building amazing projects!
         </p>
-        <button className="btn primary" style={{padding: '15px 30px', fontSize: '1.1rem'}}>
+        <Link to="/learn-filter" className="btn primary" style={{padding: '15px 30px', fontSize: '1.1rem'}}>
           Get Started Today
-        </button>
+        </Link>
       </section>
 
       {/* Footer */}
@@ -151,7 +150,6 @@ export default function Learn() {
           <div className="footer-section">
             <h4>Resources</h4>
             <ul className="footer-links">
-              <li><a href="/community">Community</a></li>
               <li><a href="/blog">Blog</a></li>
               <li><a href="/tutorials">Tutorials</a></li>
               <li><a href="/docs">Documentation</a></li>
@@ -167,7 +165,7 @@ export default function Learn() {
           </div>
         </div>
         <div className="footer-bottom">
-          <p>© 2025 CodeCraf. Start your coding journey today!</p>
+          <p>© 2025 AlgoRythm. Start your coding journey today!</p>
         </div>
       </footer>
     </div>
